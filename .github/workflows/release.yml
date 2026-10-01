@@ -30,11 +30,6 @@ jobs:
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-        with:
-          submodules: "true"
-          path: "SpikyMC-source"
       - name: Download artifacts
         uses: actions/download-artifact@v8
       - name: Grab and store version
@@ -43,12 +38,9 @@ jobs:
           echo "VERSION=$tag_name" >> $GITHUB_ENV
       - name: Package artifacts properly
         run: |
-          mv ${{ github.workspace }}/SpikyMC-source SpikyMC-${{ env.VERSION }}
           mv SpikyMC-Linux-Qt6-Portable*/SpikyMC-portable.tar.gz SpikyMC-Linux-Qt6-Portable-${{ env.VERSION }}.tar.gz
           mv SpikyMC-*.AppImage/SpikyMC-*-x86_64.AppImage SpikyMC-Linux-x86_64.AppImage
-          mv SpikyMC-*.AppImage.zsync/SpikyMC-*-x86_64.AppImage.zsync SpikyMC-Linux-x86_64.AppImage.zsync
-
-          tar --exclude='.git' -czf SpikyMC-${{ env.VERSION }}.tar.gz SpikyMC-${{ env.VERSION }}
+          mv SpikyMC-*.AppImage/SpikyMC-*-x86_64.AppImage.zsync SpikyMC-Linux-x86_64.AppImage.zsync
 
           # Only two Windows builds are published: the installer and the portable zip.
           # A plain (non-portable) zip would also be picked up by this glob, but the
@@ -82,4 +74,3 @@ jobs:
             SpikyMC-Linux-Qt6-Portable-${{ env.VERSION }}.tar.gz
             SpikyMC-Windows-MinGW-w64-Portable-${{ env.VERSION }}.zip
             SpikyMC-Windows-MinGW-w64-Setup-${{ env.VERSION }}.exe
-            SpikyMC-${{ env.VERSION }}.tar.gz
