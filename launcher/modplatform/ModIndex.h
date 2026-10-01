@@ -1,0 +1,372 @@
+// SPDX-License-Identifier: GPL-3.0-only
+/*
+ *  SpikyMC - Minecraft Launcher
+ *  Copyright (c) 2022 flowln <flowlnlnln@gmail.com>
+ *  Copyright (c) 2023 Trial97 <alexandru.tripon97@gmail.com>
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, version 3.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+#pragma once
+
+#include <QList>
+#include <QMetaType>
+#include <QString>
+#include <QVariant>
+#include <array>
+#include <cstdint>
+#include <memory>
+#include <utility>
+#include "EnumWrapper.h"
+#include "modplatform/ResourceType.h"
+
+class QIODevice;
+
+namespace ModPlatform {
+
+enum class ModLoaderType : std::uint16_t {
+    None = 0U,
+    NeoForge = 1U << 0U,
+    Forge = 1U << 1U,
+    Cauldron = 1U << 2U,
+    LiteLoader = 1U << 3U,
+    Fabric = 1U << 4U,
+    Quilt = 1U << 5U,
+    DataPack = 1U << 6U,
+    Babric = 1U << 7U,
+    BTA = 1U << 8U,
+    LegacyFabric = 1U << 9U,
+    Ornithe = 1U << 10U,
+    Rift = 1U << 11U
+};
+
+ModLoaderType operator|(ModLoaderType lhs, ModLoaderType rhs);
+
+using enum ModLoaderType;
+
+Q_DECLARE_FLAGS(ModLoaderTypes, ModLoaderType)
+QList<ModLoaderType> modLoaderTypesToList(ModLoaderTypes flags);
+
+enum class ResourceProvider : std::uint8_t { MODRINTH, FLAME };
+
+enum class DependencyTypeValue : std::uint8_t { REQUIRED, OPTIONAL, INCOMPATIBLE, EMBEDDED, TOOL, INCLUDE, UNKNOWN };
+struct DependencyType : EnumWrapper<DependencyType, DependencyTypeValue> {
+    static constexpr auto invalid() { return UNKNOWN; };
+
+    static constexpr auto mapping()
+    {
+        return std::array{
+            std::pair{ REQUIRED, "REQUIRED" }, std::pair{ OPTIONAL, "OPTIONAL" }, std::pair{ INCOMPATIBLE, "INCOMPATIBLE" },
+            std::pair{ EMBEDDED, "EMBEDDED" }, std::pair{ TOOL, "TOOL" },         std::pair{ INCLUDE, "INCLUDE" },
+            std::pair{ UNKNOWN, "UNKNOWN" },
+        };
+    };
+    static DependencyType fromString(const QString& str)
+    {
+        return EnumWrapper<DependencyType, DependencyTypeValue>::fromString(str.toUpper());
+    }
+
+    using enum DependencyTypeValue;
+    using Base = EnumWrapper<DependencyType, DependencyTypeValue>;
+    using Base::Base; /* inherit ctor */
+};
+
+enum class SideTypeValue : std::uint8_t {
+    NoSide = 0,
+    ClientSide = 1U << 0U,
+    ServerSide = 1U << 1U,
+    UniversalSide = ClientSide | ServerSide
+};
+
+struct SideType : EnumWrapper<SideType, SideTypeValue> {
+    static constexpr auto invalid() { return NoSide; };
+
+    static constexpr auto mapping()
+    {
+        return std::array{ std::pair{ ClientSide, "client" }, std::pair{ ServerSide, "server" }, std::pair{ UniversalSide, "both" },
+                           std::pair{ NoSide, "" } };
+    };
+
+    using enum SideTypeValue;
+    using Base = EnumWrapper<SideType, SideTypeValue>;
+    using Base::Base; /* inherit ctor */
+};
+
+enum class DisclosureTypeValue : std::uint8_t {
+    Unknown,
+    AIContent,
+    AIContentCode,
+    AIContentAssets,
+    AIContentText,
+    AIContentFunctionality,
+    Advertisements,
+    EpilepsyTriggers,
+    SystemInteractions,
+    Telemetry,
+    TelemetryOptIn,
+    TelemetryOptOut,
+    TelemetryAlwaysActive,
+    DerivativeWork,
+    PaidFeatures,
+    Archived,
+};
+struct DisclosureType : EnumWrapper<DisclosureType, DisclosureTypeValue> {
+    static constexpr auto invalid() { return Unknown; };
+
+    static constexpr auto mapping()
+    {
+        return std::array{
+            std::pair{ AIContent, "ai_content" },
+            std::pair{ AIContentCode, "ai_content_code" },
+            std::pair{ AIContentAssets, "ai_content_assets" },
+            std::pair{ AIContentText, "ai_content_text" },
+            std::pair{ AIContentFunctionality, "ai_content_functionality" },
+            std::pair{ Advertisements, "advertisements" },
+            std::pair{ EpilepsyTriggers, "epilepsy_triggers" },
+            std::pair{ SystemInteractions, "system_interactions" },
+            std::pair{ Telemetry, "telemetry" },
+            std::pair{ TelemetryOptIn, "telemetry_opt_in" },
+            std::pair{ TelemetryOptOut, "telemetry_opt_out" },
+            std::pair{ TelemetryAlwaysActive, "telemetry_always_active" },
+            std::pair{ DerivativeWork, "derivative_work" },
+            std::pair{ PaidFeatures, "paid_features" },
+            std::pair{ Archived, "archived" },
+        };
+    };
+
+    using enum DisclosureTypeValue;
+    using Base = EnumWrapper<DisclosureType, DisclosureTypeValue>;
+    using Base::Base; /* inherit ctor */
+};
+
+namespace ProviderCapabilities {
+const char* name(ResourceProvider);
+QString readableName(ResourceProvider);
+QStringList hashType(ResourceProvider);
+}  // namespace ProviderCapabilities
+
+struct ModpackAuthor {
+    QString name;
+    QString url;
+};
+
+struct DonationData {
+    QString id;
+    QString platform;
+    QString url;
+};
+
+enum class IndexedVersionTypeValue : std::uint8_t { Unknown = 0, Release = 1, Beta = 2, Alpha = 3 };
+struct IndexedVersionType : EnumWrapper<IndexedVersionType, IndexedVersionTypeValue> {
+    static constexpr auto invalid() { return Unknown; };
+
+    static constexpr auto mapping()
+    {
+        return std::array{ std::pair{ Unknown, "Unknown" }, std::pair{ Release, "Release" }, std::pair{ Beta, "Beta" },
+                           std::pair{ Alpha, "Alpha" } };
+    };
+
+    static IndexedVersionType fromString(const QString& str)
+    {
+        for (auto&& [e, name] : mapping()) {
+            if (str.compare(name, Qt::CaseInsensitive) == 0) {
+                return IndexedVersionType(e);
+            }
+        }
+        return IndexedVersionType(invalid());
+    }
+
+    [[nodiscard]] auto toModrinth() const -> QString
+    {
+        switch (value()) {
+            case Release:
+                return "release";
+            case Beta:
+                return "beta";
+            case Alpha:
+                return "alpha";
+            default:
+                return {};
+        }
+    }
+
+    static auto fromStringList(const QStringList& list) -> std::vector<IndexedVersionType>
+    {
+        std::vector<IndexedVersionType> out;
+        out.reserve(list.size());
+        for (const auto& str : list) {
+            auto type = fromString(str);
+            if (type.isValid()) {
+                out.push_back(type);
+            }
+        }
+        return out;
+    }
+
+    static auto toModrinthList(const std::vector<IndexedVersionType>& types) -> QStringList
+    {
+        QStringList out;
+        out.reserve(types.size());
+        for (const auto& type : types) {
+            const auto s = type.toModrinth();
+            if (!s.isEmpty()) {
+                out.append(s);
+            }
+        }
+        return out;
+    }
+
+    using enum IndexedVersionTypeValue;
+    using Base = EnumWrapper<IndexedVersionType, IndexedVersionTypeValue>;
+    using Base::Base; /* inherit ctor */
+};
+
+struct Dependency {
+    QVariant addonId;
+    DependencyType type;
+    QString version;
+};
+
+struct IndexedVersion {
+    QVariant addonId;
+    QVariant fileId;
+    QString version;
+    QString versionNumber;
+    IndexedVersionType versionType;
+    QStringList mcVersion;
+    QString downloadUrl;
+    QString date;
+    QString fileName;
+    ModLoaderTypes loaders;
+    QString hashType;
+    QString hash;
+    bool isPreferred = true;
+    QString changelog;
+    QList<Dependency> dependencies;
+    SideType side = SideType::NoSide;  // this is for flame API
+
+    // For internal use, not provided by APIs
+    bool isCurrentlySelected = false;
+
+    QString getVersionDisplayString() const
+    {
+        auto releaseType = versionType.isValid() ? QString(" [%1]").arg(versionType.toString()) : "";
+        auto versionStr = !version.contains(versionNumber) ? versionNumber : "";
+        QString gameVersion = "";
+        for (const auto& v : mcVersion) {
+            if (version.contains(v)) {
+                gameVersion = "";
+                break;
+            }
+            if (gameVersion.isEmpty()) {
+                gameVersion = QObject::tr(" for %1").arg(v);
+            }
+        }
+        return QString("%1%2 — %3%4").arg(version, gameVersion, versionStr, releaseType);
+    }
+};
+
+struct ExtraPackData {
+    QList<DonationData> donate;
+
+    QString issuesUrl;
+    QString sourceUrl;
+    QString wikiUrl;
+    QString discordUrl;
+
+    QString status;
+
+    QString body;
+};
+
+struct IndexedPack {
+    using Ptr = std::shared_ptr<IndexedPack>;
+
+    QVariant addonId;
+    ResourceProvider provider;
+    QString name;
+    QString slug;
+    QString description;
+    QList<ModpackAuthor> authors;
+    QString logoName;
+    QString logoUrl;
+    QString websiteUrl;
+    SideType side = SideType::NoSide;
+
+    bool versionsLoaded = false;
+    QList<IndexedVersion> versions;
+
+    // Don't load by default, since some modplatform don't have that info
+    bool extraDataLoaded = true;
+    ExtraPackData extraData;
+
+    ResourceType resourceType = ResourceType::Unknown;
+
+    // For internal use, not provided by APIs
+    bool isVersionSelected(int index) const
+    {
+        if (!versionsLoaded) {
+            return false;
+        }
+
+        return versions.at(index).isCurrentlySelected;
+    }
+    bool isAnyVersionSelected() const
+    {
+        if (!versionsLoaded) {
+            return false;
+        }
+
+        return std::any_of(versions.constBegin(), versions.constEnd(), [](const auto& v) { return v.isCurrentlySelected; });
+    }
+};
+
+struct OverrideDep {
+    QString quilt;
+    QString fabric;
+    QString slug;
+    ModPlatform::ResourceProvider provider;
+};
+
+inline auto getOverrideDeps() -> QList<OverrideDep>
+{
+    return {
+        { .quilt = "634179", .fabric = "306612", .slug = "API", .provider = ModPlatform::ResourceProvider::FLAME },
+        { .quilt = "720410", .fabric = "308769", .slug = "KotlinLibraries", .provider = ModPlatform::ResourceProvider::FLAME },
+
+        { .quilt = "qvIfYCYJ", .fabric = "P7dR8mSH", .slug = "API", .provider = ModPlatform::ResourceProvider::MODRINTH },
+        { .quilt = "lwVhp9o5", .fabric = "Ha28R6CL", .slug = "KotlinLibraries", .provider = ModPlatform::ResourceProvider::MODRINTH }
+    };
+}
+
+QString getMetaURL(ResourceProvider provider, QVariant projectID);
+
+auto getModLoaderAsString(ModLoaderType type) -> const QString;
+auto getModLoaderFromString(QString type) -> ModLoaderType;
+
+constexpr bool hasSingleModLoaderSelected(ModLoaderTypes l) noexcept
+{
+    auto x = static_cast<std::uint16_t>(l);
+    return (x != 0U) && ((x & (x - 1U)) == 0U);
+}
+
+struct Category {
+    QString name;
+    QString id;
+};
+
+}  // namespace ModPlatform
+
+Q_DECLARE_METATYPE(ModPlatform::IndexedPack)
+Q_DECLARE_METATYPE(ModPlatform::IndexedPack::Ptr)
+Q_DECLARE_METATYPE(ModPlatform::ResourceProvider)

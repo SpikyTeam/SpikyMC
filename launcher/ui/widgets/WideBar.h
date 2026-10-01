@@ -1,0 +1,47 @@
+#pragma once
+
+#include <QAction>
+#include <QMap>
+#include <QMenu>
+#include <QToolBar>
+
+#include <memory>
+
+class WideBar : public QToolBar {
+    Q_OBJECT
+    // Why: so we can enable / disable alt shortcuts in toolbuttons
+    // with toolbuttons using setDefaultAction, theres no alt shortcuts
+    Q_PROPERTY(bool useDefaultAction MEMBER m_use_default_action)
+
+   public:
+    explicit WideBar(const QString& title, QWidget* parent = nullptr);
+    explicit WideBar(QWidget* parent = nullptr);
+    ~WideBar() override = default;
+
+    void addAction(QAction* action);
+    void addSeparator();
+
+    void insertSpacer(QAction* action);
+    void insertSeparator(QAction* before);
+    void insertActionBefore(QAction* before, QAction* action);
+    void insertActionAfter(QAction* after, QAction* action);
+    void insertWidgetBefore(QAction* before, QWidget* widget);
+
+    QMenu* createContextMenu(QWidget* parent = nullptr, const QString& title = QString());
+
+    void removeAction(QAction* action);
+
+   private:
+    struct BarEntry {
+        enum class Type { None, Action, Separator, Spacer } type = Type::None;
+        QAction* bar_action = nullptr;
+        QAction* menu_action = nullptr;
+    };
+
+    auto getMatching(QAction* act) -> QList<BarEntry>::iterator;
+
+   private:
+    QList<BarEntry> m_entries;
+
+    bool m_use_default_action = false;
+};

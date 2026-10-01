@@ -1,0 +1,23 @@
+#pragma once
+
+#include "minecraft/mod/DataPack.h"
+
+#include <QImage>
+#include <QMutex>
+#include <QPixmap>
+#include <QPixmapCache>
+
+class Version;
+
+/* TODO:
+ *
+ * Store localized descriptions
+ * */
+
+class ResourcePack : public DataPack {
+   public:
+    ResourcePack(QFileInfo file_info) : DataPack(file_info) {}
+
+    /** Gets, respectively, the lower and upper versions supported by the set pack format. */
+    QMap<std::pair<int, int>, std::pair<Version, Version>> mappings() const override;
+};

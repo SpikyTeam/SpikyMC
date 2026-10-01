@@ -1,0 +1,375 @@
+// SPDX-License-Identifier: GPL-3.0-only
+/*
+ *  SpikyMC - Minecraft Launcher
+ *  Copyright (c) 2022 flowln <flowlnlnln@gmail.com>
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, version 3.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * This file incorporates work covered by the following copyright and
+ * permission notice:
+ *
+ *      Copyright 2013-2021 MultiMC Contributors
+ *      Copyright 2021-2022 kb1000
+ *
+ *      Licensed under the Apache License, Version 2.0 (the "License");
+ *      you may not use this file except in compliance with the License.
+ *      You may obtain a copy of the License at
+ *
+ *          http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *      Unless required by applicable law or agreed to in writing, software
+ *      distributed under the License is distributed on an "AS IS" BASIS,
+ *      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *      See the License for the specific language governing permissions and
+ *      limitations under the License.
+ */
+
+#include "ModrinthPage.h"
+#include "modplatform/ModIndex.h"
+#include "modplatform/modrinth/ModrinthAPI.h"
+#include "ui/dialogs/CustomMessageBox.h"
+#include "ui_ModrinthPage.h"
+
+#include "ModrinthModel.h"
+
+#include "InstanceImportTask.h"
+#include "Markdown.h"
+#include "StringUtils.h"
+
+#include "ui/widgets/ProjectItem.h"
+
+#include <QComboBox>
+#include <QKeyEvent>
+#include <QPushButton>
+
+ModrinthPage::ModrinthPage(NewInstanceDialog* dialog, QWidget* parent)
+    : QWidget(parent)
+    , m_ui(new Ui::ModrinthPage)
+    , m_dialog(dialog)
+    , m_model(new Modrinth::ModpackListModel(this))
+    , m_fetchProgress(this, false)
+{
+    m_ui->setupUi(this);
+    createFilterWidget();
+
+    m_ui->packView->setModel(m_model);
+
+    m_ui->versionSelectionBox->view()->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    m_ui->versionSelectionBox->view()->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+
+    m_searchTimer.setTimerType(Qt::TimerType::CoarseTimer);
+    m_searchTimer.setSingleShot(true);
+
+    connect(&m_searchTimer, &QTimer::timeout, this, &ModrinthPage::triggerSearch);
+
+    connect(m_ui->searchEdit, &QLineEdit::textEdited, this, [this] {
+        if (m_searchTimer.isActive()) {
+            m_searchTimer.stop();
+        }
+        m_searchTimer.start(350);
+    });
+
+    m_fetchProgress.hideIfInactive(true);
+    m_fetchProgress.setFixedHeight(24);
+    m_fetchProgress.progressFormat("");
+
+    m_ui->verticalLayout->insertWidget(1, &m_fetchProgress);
+
+    m_ui->sortByBox->addItem(tr("Sort by Relevance"));
+    m_ui->sortByBox->addItem(tr("Sort by Total Downloads"));
+    m_ui->sortByBox->addItem(tr("Sort by Follows"));
+    m_ui->sortByBox->addItem(tr("Sort by Newest"));
+    m_ui->sortByBox->addItem(tr("Sort by Last Updated"));
+
+    connect(m_ui->sortByBox, &QComboBox::currentIndexChanged, this, &ModrinthPage::triggerSearch);
+    connect(m_ui->packView->selectionModel(), &QItemSelectionModel::currentChanged, this, &ModrinthPage::onSelectionChanged);
+    connect(m_ui->versionSelectionBox, &QComboBox::currentIndexChanged, this, &ModrinthPage::onVersionSelectionChanged);
+
+    m_ui->packView->setItemDelegate(new ProjectItemDelegate(this));
+    m_ui->packDescription->setMetaEntry(metaEntryBase());
+}
+
+ModrinthPage::~ModrinthPage()
+{
+    delete m_ui;
+}
+
+void ModrinthPage::retranslate()
+{
+    m_ui->retranslateUi(this);
+}
+
+void ModrinthPage::openedImpl()
+{
+    BasePage::openedImpl();
+    suggestCurrent();
+    triggerSearch();
+}
+
+void ModrinthPage::onSelectionChanged(QModelIndex curr, [[maybe_unused]] QModelIndex prev)
+{
+    m_ui->versionSelectionBox->clear();
+
+    if (!curr.isValid()) {
+        if (isOpened) {
+            m_dialog->setSuggestedPack();
+        }
+        return;
+    }
+
+    m_current = m_model->data(curr, Qt::UserRole).value<ModPlatform::IndexedPack::Ptr>();
+    if (!m_current) {
+        return;
+    }
+
+    auto name = m_current->name;
+
+    if (!m_current->extraDataLoaded) {
+        qDebug() << "Loading modrinth modpack information";
+        ResourceAPI::Callback<ModPlatform::IndexedPack::Ptr> callbacks;
+
+        auto id = m_current->addonId;
+        callbacks.onFail = [this](const QString& reason, int) {
+            CustomMessageBox::selectable(this, tr("Error"), reason, QMessageBox::Critical)->exec();
+        };
+        callbacks.onSucceed = [this, id, curr](auto& pack) {
+            if (id != m_current->addonId) {
+                return;  // wrong request?
+            }
+
+            QVariant currentUpdated;
+            currentUpdated.setValue(pack);
+
+            if (!m_model->setData(curr, currentUpdated, Qt::UserRole)) {
+                qWarning() << "Failed to cache extra info for the current pack!";
+            }
+
+            suggestCurrent();
+            updateUI();
+        };
+        if (auto netJob = ModrinthAPI::get().getProjectInfo({ m_current }, callbacks); netJob) {
+            m_job = netJob;
+            m_job->start();
+        }
+
+    } else {
+        updateUI();
+    }
+
+    if (!m_current->versionsLoaded || m_filterWidget->changed()) {
+        qDebug() << "Loading modrinth modpack versions";
+
+        ResourceAPI::Callback<QVector<ModPlatform::IndexedVersion>> callbacks{};
+
+        auto addonId = m_current->addonId;
+        // Use default if no callbacks are set
+        callbacks.onSucceed = [this, curr, addonId](auto& doc) {
+            if (addonId != m_current->addonId) {
+                return;  // wrong request
+            }
+
+            m_current->versions = doc;
+            m_current->versionsLoaded = true;
+            auto pred = [this](const ModPlatform::IndexedVersion& v) {
+                if (auto filter = m_filterWidget->getFilter()) {
+                    return !filter->checkModpackFilters(v);
+                }
+                return false;
+            };
+            m_current->versions.removeIf(pred);
+            for (const auto& version : m_current->versions) {
+                m_ui->versionSelectionBox->addItem(version.getVersionDisplayString(), QVariant(version.fileId));
+            }
+
+            QVariant currentUpdated;
+            currentUpdated.setValue(m_current);
+
+            if (!m_model->setData(curr, currentUpdated, Qt::UserRole)) {
+                qWarning() << "Failed to cache versions for the current pack!";
+            }
+
+            suggestCurrent();
+        };
+        callbacks.onFail = [this](const QString& reason, int) {
+            CustomMessageBox::selectable(this, tr("Error"), reason, QMessageBox::Critical)->exec();
+        };
+
+        auto netJob = ModrinthAPI::get().getProjectVersions(
+            { .pack = m_current, .mcVersions = {}, .loaders = {}, .resourceType = ModPlatform::ResourceType::Modpack }, callbacks);
+
+        m_job2 = netJob;
+        m_job2->start();
+
+    } else {
+        for (const auto& version : m_current->versions) {
+            if (!version.version.contains(version.version)) {
+                m_ui->versionSelectionBox->addItem(QString("%1 - %2").arg(version.version, version.versionNumber),
+                                                   QVariant(version.fileId));
+            } else {
+                m_ui->versionSelectionBox->addItem(version.version, QVariant(version.fileId));
+            }
+        }
+
+        suggestCurrent();
+    }
+}
+
+void ModrinthPage::updateUI()
+{
+    QString text = "";
+
+    if (m_current->websiteUrl.isEmpty()) {
+        text = m_current->name;
+    } else {
+        text = "<a href=\"" + m_current->websiteUrl + "\">" + m_current->name + "</a>";
+    }
+
+    if (!m_current->authors.empty()) {
+        auto authorToStr = [](ModPlatform::ModpackAuthor& author) {
+            if (author.url.isEmpty()) {
+                return author.name;
+            }
+            return QString("<a href=\"%1\">%2</a>").arg(author.url, author.name);
+        };
+        QStringList authorStrs;
+        for (auto& author : m_current->authors) {
+            authorStrs.push_back(authorToStr(author));
+        }
+        text += "<br>" + tr(" by ") + authorStrs.join(", ");
+    }
+
+    if (m_current->extraDataLoaded) {
+        if (m_current->extraData.status == "archived") {
+            text += "<br><br>" + tr("<b>This project has been archived. It will not receive any further updates unless the author decides "
+                                    "to unarchive the project.</b>");
+        }
+
+        if (!m_current->extraData.donate.isEmpty()) {
+            text += "<br><br>" + tr("Donate information: ");
+            auto donateToStr = [](ModPlatform::DonationData& donate) -> QString {
+                return QString("<a href=\"%1\">%2</a>").arg(donate.url, donate.platform);
+            };
+            QStringList donates;
+            for (auto& donate : m_current->extraData.donate) {
+                donates.append(donateToStr(donate));
+            }
+            text += donates.join(", ");
+        }
+
+        if (!m_current->extraData.issuesUrl.isEmpty() || !m_current->extraData.sourceUrl.isEmpty() ||
+            !m_current->extraData.wikiUrl.isEmpty() || !m_current->extraData.discordUrl.isEmpty()) {
+            text += "<br><br>" + tr("External links:") + "<br>";
+        }
+
+        if (!m_current->extraData.issuesUrl.isEmpty()) {
+            text += "- " + tr("Issues: <a href=%1>%1</a>").arg(m_current->extraData.issuesUrl) + "<br>";
+        }
+        if (!m_current->extraData.wikiUrl.isEmpty()) {
+            text += "- " + tr("Wiki: <a href=%1>%1</a>").arg(m_current->extraData.wikiUrl) + "<br>";
+        }
+        if (!m_current->extraData.sourceUrl.isEmpty()) {
+            text += "- " + tr("Source code: <a href=%1>%1</a>").arg(m_current->extraData.sourceUrl) + "<br>";
+        }
+        if (!m_current->extraData.discordUrl.isEmpty()) {
+            text += "- " + tr("Discord: <a href=%1>%1</a>").arg(m_current->extraData.discordUrl) + "<br>";
+        }
+    }
+
+    text += "<hr>";
+
+    text += markdownToHTML(m_current->extraData.body.toUtf8());
+
+    m_ui->packDescription->setHtml(StringUtils::htmlListPatch(text + m_current->description));
+    m_ui->packDescription->flush();
+}
+
+void ModrinthPage::suggestCurrent()
+{
+    if (!isOpened) {
+        return;
+    }
+
+    if (m_selectedVersion.isEmpty()) {
+        m_dialog->setSuggestedPack();
+        return;
+    }
+
+    for (auto& ver : m_current->versions) {
+        if (ver.fileId == m_selectedVersion) {
+            QMap<QString, QString> extraInfo;
+            extraInfo.insert("pack_id", m_current->addonId.toString());
+            extraInfo.insert("pack_version_id", ver.fileId.toString());
+
+            m_dialog->setSuggestedPack(m_current->name, ver.version,
+                                       new InstanceImportTask(ver.downloadUrl, true, this, std::move(extraInfo)));
+            QString editedLogoName = "modrinth_" + m_current->logoName;
+            m_model->getLogo(m_current->logoName, m_current->logoUrl,
+                             [this, editedLogoName](const QString& logo) { m_dialog->setSuggestedIconFromFile(logo, editedLogoName); });
+
+            break;
+        }
+    }
+}
+
+void ModrinthPage::triggerSearch()
+{
+    m_ui->packView->selectionModel()->setCurrentIndex({}, QItemSelectionModel::SelectionFlag::ClearAndSelect);
+    m_ui->packView->clearSelection();
+    m_ui->packDescription->clear();
+    m_ui->versionSelectionBox->clear();
+    bool filterChanged = m_filterWidget->changed();
+    m_model->searchWithTerm(m_ui->searchEdit->text(), m_ui->sortByBox->currentIndex(), m_filterWidget->getFilter(), filterChanged);
+    m_fetchProgress.watch(m_model->activeSearchJob().get());
+}
+
+void ModrinthPage::onVersionSelectionChanged(int index)
+{
+    if (index == -1) {
+        m_selectedVersion = "";
+        return;
+    }
+    m_selectedVersion = m_ui->versionSelectionBox->itemData(index).toString();
+    suggestCurrent();
+}
+
+void ModrinthPage::setSearchTerm(QString term)
+{
+    m_ui->searchEdit->setText(term);
+}
+
+QString ModrinthPage::getSerachTerm() const
+{
+    return m_ui->searchEdit->text();
+}
+
+void ModrinthPage::createFilterWidget()
+{
+    auto* widget = ModFilterWidget::create(nullptr, true);
+    m_filterWidget.reset(widget);
+    auto* old = m_ui->splitter->replaceWidget(0, m_filterWidget.get());
+    // because we replaced the widget we also need to delete it
+    if (old) {
+        old->deleteLater();
+    }
+
+    connect(m_ui->filterButton, &QPushButton::clicked, this, [this] { m_filterWidget->setHidden(!m_filterWidget->isHidden()); });
+
+    connect(m_filterWidget.get(), &ModFilterWidget::filterChanged, this, &ModrinthPage::triggerSearch);
+    auto [categoriesTask, response] = ModrinthAPI::get().getModCategories();
+    m_categoriesTask = categoriesTask;
+    connect(m_categoriesTask.get(), &Task::succeeded, this, [this, response]() {
+        auto categories = ModrinthAPI::loadCategories(*response, "modpack");
+        m_filterWidget->setCategories(categories);
+    });
+    m_categoriesTask->start();
+}

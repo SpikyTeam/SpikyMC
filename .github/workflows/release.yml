@@ -1,0 +1,85 @@
+name: Build Application and Make Release
+
+on:
+  push:
+    tags:
+      - "*"
+
+permissions: {}
+
+jobs:
+  build_release:
+    name: Build Release
+    uses: ./.github/workflows/build.yml
+    permissions:
+      contents: read
+      # Required for Azure Trusted Signing
+      id-token: write
+      # Required for vcpkg binary cache
+      packages: write
+    with:
+      build-type: Release
+      environment: Release
+    secrets: inherit
+
+  create_release:
+    needs: build_release
+    permissions:
+      contents: write
+    runs-on: ubuntu-slim
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          submodules: "true"
+          path: "SpikyMC-source"
+      - name: Download artifacts
+        uses: actions/download-artifact@v8
+      - name: Grab and store version
+        run: |
+          tag_name=$(echo ${{ github.ref }} | grep -oE "[^/]+$")
+          echo "VERSION=$tag_name" >> $GITHUB_ENV
+      - name: Package artifacts properly
+        run: |
+          mv ${{ github.workspace }}/SpikyMC-source SpikyMC-${{ env.VERSION }}
+          mv SpikyMC-Linux-Qt6-Portable*/SpikyMC-portable.tar.gz SpikyMC-Linux-Qt6-Portable-${{ env.VERSION }}.tar.gz
+          mv SpikyMC-*.AppImage/SpikyMC-*-x86_64.AppImage SpikyMC-Linux-x86_64.AppImage
+          mv SpikyMC-*.AppImage.zsync/SpikyMC-*-x86_64.AppImage.zsync SpikyMC-Linux-x86_64.AppImage.zsync
+
+          tar --exclude='.git' -czf SpikyMC-${{ env.VERSION }}.tar.gz SpikyMC-${{ env.VERSION }}
+
+          # Only two Windows builds are published: the installer and the portable zip.
+          # A plain (non-portable) zip would also be picked up by this glob, but the
+          # in-app updater rejects archives for non-portable Windows installs
+          # (SpikyMCUpdater.cpp, validReleaseArtifacts), so it would never be used.
+          for d in SpikyMC-Windows-MinGW-w64*; do
+            cd "${d}" || continue
+            INST="$(echo -n ${d} | grep -o Setup || true)"
+            PORT="$(echo -n ${d} | grep -o Portable || true)"
+            NAME="SpikyMC-Windows-MinGW-w64"
+            test -z "${PORT}" || NAME="${NAME}-Portable"
+            test -z "${INST}" || mv SpikyMC-*.exe ../${NAME}-Setup-${{ env.VERSION }}.exe
+            # only the portable directory gets zipped; Setup becomes an .exe, plain is skipped
+            if [ -n "${PORT}" ]; then zip -r -9 "../${NAME}-${{ env.VERSION }}.zip" *; fi
+            cd ..
+          done
+
+      - name: Create release
+        id: create_release
+        uses: softprops/action-gh-release@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: ${{ github.ref }}
+          name: SpikyMC ${{ env.VERSION }}
+          draft: true
+          prerelease: false
+          fail_on_unmatched_files: true
+          files: |
+            SpikyMC-Linux-x86_64.AppImage
+            SpikyMC-Linux-x86_64.AppImage.zsync
+            SpikyMC-Linux-Qt6-Portable-${{ env.VERSION }}.tar.gz
+            SpikyMC-Windows-MinGW-w64-Portable-${{ env.VERSION }}.zip
+            SpikyMC-Windows-MinGW-w64-Setup-${{ env.VERSION }}.exe
+            SpikyMC-${{ env.VERSION }}.tar.gz

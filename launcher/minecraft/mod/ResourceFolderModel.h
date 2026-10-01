@@ -1,0 +1,284 @@
+#pragma once
+
+#include <QDir>
+#include <QFileSystemWatcher>
+#include <QHeaderView>
+#include <QSortFilterProxyModel>
+#include <QThread>
+#include <QTreeView>
+
+#include "Resource.h"
+
+#include "tasks/ConcurrentTask.h"
+#include "tasks/Task.h"
+
+class MinecraftInstance;
+class QSortFilterProxyModel;
+
+/* A macro to define useful functions to handle Resource* -> T* more easily on derived classes */
+#define RESOURCE_HELPERS(T)                                         \
+    T& at(int index)                                                \
+    {                                                               \
+        return *static_cast<T*>(m_resources[index].get());          \
+    }                                                               \
+    const T& at(int index) const                                    \
+    {                                                               \
+        return *static_cast<const T*>(m_resources.at(index).get()); \
+    }                                                               \
+    QList<T*> selected##T##s(const QModelIndexList& indexes)        \
+    {                                                               \
+        QList<T*> result;                                           \
+        for (const QModelIndex& index : indexes) {                  \
+            if (index.column() != 0)                                \
+                continue;                                           \
+                                                                    \
+            result.append(&at(index.row()));                        \
+        }                                                           \
+        return result;                                              \
+    }                                                               \
+    QList<T*> all##T##s()                                           \
+    {                                                               \
+        QList<T*> result;                                           \
+        result.reserve(m_resources.size());                         \
+                                                                    \
+        for (const Resource::Ptr& resource : m_resources)           \
+            result.append(static_cast<T*>(resource.get()));         \
+                                                                    \
+        return result;                                              \
+    }
+
+/** A basic model for external resources.
+ *
+ *  This model manages a list of resources. As such, external users of such resources do not own them,
+ *  and the resource's lifetime is contingent on the model's lifetime.
+ *
+ *  TODO: Make the resources unique pointers accessible through weak pointers.
+ */
+class ResourceFolderModel : public QAbstractListModel {
+    Q_OBJECT
+   public:
+    ResourceFolderModel(const QDir& dir, MinecraftInstance* instance, bool isIndexed, bool createDir, QObject* parent = nullptr);
+    ~ResourceFolderModel() override;
+
+    virtual QString id() const { return "resource"; }
+
+    /** Starts watching the paths for changes.
+     *
+     *  Returns whether starting to watch all the paths was successful.
+     *  If one or more fails, it returns false.
+     */
+    bool startWatching(const QStringList& paths);
+
+    /** Stops watching the paths for changes.
+     *
+     *  Returns whether stopping to watch all the paths was successful.
+     *  If one or more fails, it returns false.
+     */
+    bool stopWatching(const QStringList& paths);
+
+    /* Helper methods for subclasses, using a predetermined list of paths. */
+    virtual bool startWatching() { return startWatching({ indexDir().absolutePath(), m_dir.absolutePath() }); }
+    virtual bool stopWatching() { return stopWatching({ indexDir().absolutePath(), m_dir.absolutePath() }); }
+
+    virtual QDir indexDir() const { return { QString("%1/.index").arg(dir().absolutePath()) }; }
+
+    /** Given a path in the system, install that resource, moving it to its place in the
+     *  instance file hierarchy.
+     *
+     *  Returns whether the installation was succcessful.
+     */
+    virtual bool installResource(QString path);
+
+    virtual void installResourceWithFlameMetadata(const QString& path, ModPlatform::IndexedVersion& vers);
+
+    /** Uninstall (i.e. remove all data about it) a resource, given its file name.
+     *
+     *  Returns whether the removal was successful.
+     */
+    virtual bool uninstallResource(const QString& fileName, bool preserveMetadata = false);
+    virtual bool deleteResources(const QModelIndexList&);
+    virtual void deleteMetadata(const QModelIndexList&);
+
+    /** Applies the given 'action' to the resources in 'indexes'.
+     *
+     *  Returns whether the action was successfully applied to all resources.
+     */
+    virtual bool setResourceEnabled(const QModelIndexList& indexes, EnableAction action);
+
+    /** Creates a new update task and start it. Returns false if no update was done, like when an update is already underway. */
+    virtual bool update();
+
+    /** Creates a new parse task, if needed, for 'res' and start it.*/
+    virtual void resolveResource(const Resource::Ptr& res);
+
+    qsizetype size() const { return m_resources.size(); }
+    [[nodiscard]] bool empty() const { return size() == 0; }
+
+    Resource& at(int index) { return *m_resources[index].get(); }
+    const Resource& at(int index) const { return *m_resources.at(index).get(); }
+    QList<Resource*> selectedResources(const QModelIndexList& indexes);
+    QList<Resource*> allResources();
+
+    Resource::Ptr find(QString id);
+
+    const QDir& dir() const { return m_dir; }
+
+    /** Checks whether there's any parse tasks being done.
+     *
+     *  Since they can be quite expensive, and are usually done in a separate thread, if we were to destroy the model while having
+     *  such tasks would introduce an undefined behavior, most likely resulting in a crash.
+     */
+    bool hasPendingParseTasks() const;
+
+    /* Qt behavior */
+
+    /* Basic columns */
+    enum Columns : std::uint8_t {
+        ActiveColumn = 0,
+        NameColumn,
+        VersionColumn,
+        DateColumn,
+        ProviderColumn,
+        SizeColumn,
+        FileNameColumn,
+        LockUpdateColumn,
+        NumColumns
+    };
+
+    QStringList columnNames(bool translated = true) const { return translated ? m_columnNamesTranslated : m_columnNames; }
+
+    int rowCount(const QModelIndex& parent = {}) const override { return parent.isValid() ? 0 : static_cast<int>(size()); }
+    int columnCount(const QModelIndex& parent = {}) const override { return parent.isValid() ? 0 : NumColumns; }
+
+    Qt::DropActions supportedDropActions() const override;
+
+    /// flags, mostly to support drag&drop
+    Qt::ItemFlags flags(const QModelIndex& index) const override;
+    QStringList mimeTypes() const override;
+    [[nodiscard]] bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) override;
+
+    [[nodiscard]] bool validateIndex(const QModelIndex& index) const;
+
+    QBrush rowBackground(int row) const;
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+    bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
+
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+
+    void setupHeaderAction(QAction* act, int column) const;
+    void saveColumns(QTreeView* tree);
+    void loadColumns(QTreeView* tree);
+    QMenu* createHeaderContextMenu(QTreeView* tree);
+
+    /** This creates a proxy model to filter / sort the model for a UI.
+     *
+     *  The actual comparisons and filtering are done directly by the Resource, so to modify behavior go there instead!
+     */
+    static QSortFilterProxyModel* createFilterProxyModel(QObject* parent = nullptr);
+
+    SortType columnToSortKey(size_t column) const;
+    QList<QHeaderView::ResizeMode> columnResizeModes() const { return m_columnResizeModes; }
+
+    class ProxyModel : public QSortFilterProxyModel {
+       public:
+        explicit ProxyModel(QObject* parent = nullptr) : QSortFilterProxyModel(parent) {}
+
+       protected:
+        bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const override;
+        bool lessThan(const QModelIndex& sourceLeft, const QModelIndex& sourceRight) const override;
+    };
+
+    QString instDirPath() const;
+    MinecraftInstance* instance() const { return m_instance; }
+
+    bool setUpdateLock(const QModelIndexList& indexes, EnableAction action);
+
+   signals:
+    void updateFinished();
+    void parseFinished();
+
+   protected:
+    [[nodiscard]] virtual Task* createPreUpdateTask() { return nullptr; }
+    /** This creates a new update task to be executed by update().
+     *
+     *  The task should load and parse all resources necessary, and provide a way of accessing such results.
+     *
+     *  This Task is normally executed when opening a page, so it shouldn't contain much heavy work.
+     *  If such work is needed, try using it in the Task create by createParseTask() instead!
+     */
+    [[nodiscard]] Task* createUpdateTask();
+
+    [[nodiscard]] virtual Resource* createResource(const QFileInfo& info) { return new Resource(info); }
+
+    /** This creates a new parse task to be executed by onUpdateSucceeded().
+     *
+     *  This task should load and parse all heavy info needed by a resource, such as parsing a manifest. It gets executed
+     *  in the background, so it slowly updates the UI as tasks get done.
+     */
+    [[nodiscard]] virtual Task* createParseTask(Resource& /*unused*/) { return nullptr; }
+
+    /** Standard implementation of the model update logic.
+     *
+     *  It uses set operations to find differences between the current state and the updated state,
+     *  to act only on those disparities.
+     *
+     */
+    void applyUpdates(QSet<QString>& currentSet, QSet<QString>& newSet, QMap<QString, Resource::Ptr>& newResources);
+
+   protected slots:
+    void directoryChanged(const QString&);
+
+    /** Called when the update task is successful.
+     *
+     *  This usually calls static_cast on the specific Task type returned by createUpdateTask,
+     *  so care must be taken in such cases.
+     *  TODO: Figure out a way to express this relationship better without templated classes (Q_OBJECT macro disallows that).
+     */
+    virtual void onUpdateSucceeded();
+    virtual void onUpdateFailed() {}
+
+    /** Called when the parse task with the given ticket is successful.
+     *
+     *  This is just a simple reference implementation. You probably want to override it with your own logic in a subclass
+     *  if the resource is complex and has more stuff to parse.
+     */
+    virtual void onParseSucceeded(int ticket, const QString& resourceId);
+    virtual void onParseFailed(int ticket, const QString& resourceId);
+
+   protected:
+    // Represents the relationship between a column's index (represented by the list index), and it's sorting key.
+    // As such, the order in with they appear is very important!
+    QList<SortType> m_columnSortKeys = { SortType::Enabled,  SortType::Name, SortType::Version,  SortType::Date,
+                                         SortType::Provider, SortType::Size, SortType::Filename, SortType::LockUpdate };
+    QStringList m_columnNames = { "Enable", "Name", "Version", "Last Modified", "Provider", "Size", "File Name", "Update" };
+    QStringList m_columnNamesTranslated = { tr("Enable"),   tr("Name"), tr("Version"),   tr("Last Modified"),
+                                            tr("Provider"), tr("Size"), tr("File Name"), tr("Update") };
+    QList<QHeaderView::ResizeMode> m_columnResizeModes = { QHeaderView::Interactive, QHeaderView::Stretch,     QHeaderView::Interactive,
+                                                           QHeaderView::Interactive, QHeaderView::Interactive, QHeaderView::Interactive,
+                                                           QHeaderView::Interactive, QHeaderView::Interactive };
+    QList<bool> m_columnsHideable = { false, false, true, true, true, true, true, true };
+
+    QDir m_dir;
+    MinecraftInstance* m_instance;
+    QFileSystemWatcher m_watcher;
+    bool m_isWatching = false;
+
+    bool m_isIndexed;
+    bool m_firstFolderLoad = true;
+
+    Task::Ptr m_currentUpdateTask = nullptr;
+    bool m_scheduledUpdate = false;
+
+    QList<Resource::Ptr> m_resources;
+
+    // Represents the relationship between a resource's internal ID and it's row position on the model.
+    QMap<QString, int> m_resourcesIndex;
+
+    // Runs off-thread
+    ConcurrentTask m_resourceResolver;
+    bool m_resourceResolverRunning = false;
+    QThread m_resourceResolverThread{ this };
+
+    QMap<int, Task::Ptr> m_activeParseTasks;
+    std::atomic<int> m_nextResolutionTicket = 0;
+};

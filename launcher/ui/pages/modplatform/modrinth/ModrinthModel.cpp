@@ -1,0 +1,371 @@
+// SPDX-License-Identifier: GPL-3.0-only
+/*
+ *  SpikyMC - Minecraft Launcher
+ *  Copyright (c) 2022 flowln <flowlnlnln@gmail.com>
+ *  Copyright (C) 2022 Sefa Eyeoglu <contact@scrumplex.net>
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, version 3.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * This file incorporates work covered by the following copyright and
+ * permission notice:
+ *
+ *      Copyright 2013-2021 MultiMC Contributors
+ *
+ *      Licensed under the Apache License, Version 2.0 (the "License");
+ *      you may not use this file except in compliance with the License.
+ *      You may obtain a copy of the License at
+ *
+ *          http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *      Unless required by applicable law or agreed to in writing, software
+ *      distributed under the License is distributed on an "AS IS" BASIS,
+ *      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *      See the License for the specific language governing permissions and
+ *      limitations under the License.
+ */
+
+#include "ModrinthModel.h"
+
+#include "Application.h"
+#include "BuildConfig.h"
+#include "modplatform/ModIndex.h"
+#include "modplatform/modrinth/ModrinthAPI.h"
+#include "net/NetJob.h"
+#include "ui/widgets/ProjectItem.h"
+
+#include "net/ApiRequest.h"
+
+#include <QMessageBox>
+#include <memory>
+#include <utility>
+
+namespace {
+auto sortFromIndex(int index) -> QString
+{
+    switch (index) {
+        default:
+        case 0:
+            return "relevance";
+        case 1:
+            return "downloads";
+        case 2:
+            return "follows";
+        case 3:
+            return "newest";
+        case 4:
+            return "updated";
+    }
+}
+}  // namespace
+namespace Modrinth {
+
+ModpackListModel::ModpackListModel(ModrinthPage* parent) : QAbstractListModel(parent), m_parent(parent) {}
+
+auto ModpackListModel::debugName() -> QString
+{
+    return ModrinthPage::debugName();
+}
+
+/******** Make data requests ********/
+
+void ModpackListModel::fetchMore(const QModelIndex& parent)
+{
+    if (parent.isValid()) {
+        return;
+    }
+    if (m_nextSearchOffset == 0) {
+        qWarning() << "fetchMore with 0 offset is wrong...";
+        return;
+    }
+    performPaginatedSearch();
+}
+
+auto ModpackListModel::data(const QModelIndex& index, int role) const -> QVariant
+{
+    int pos = index.row();
+    if (pos >= m_modpacks.size() || pos < 0 || !index.isValid()) {
+        return QString("INVALID INDEX %1").arg(pos);
+    }
+
+    auto pack = m_modpacks.at(pos);
+    switch (role) {
+        case Qt::ToolTipRole: {
+            if (pack->description.length() > 100) {
+                // some magic to prevent to long tooltips and replace html linebreaks
+                QString edit = pack->description.left(97);
+                edit = edit.left(edit.lastIndexOf("<br>")).left(edit.lastIndexOf(" ")).append("...");
+                return edit;
+            }
+            return pack->description;
+        }
+        case Qt::DecorationRole: {
+            if (m_logoMap.contains(pack->logoName)) {
+                return m_logoMap.value(pack->logoName);
+            }
+
+            QIcon icon = QIcon::fromTheme("screenshot-placeholder");
+            const_cast<ModpackListModel*>(this)->requestLogo(pack->logoName, pack->logoUrl);
+            return icon;
+        }
+        case Qt::UserRole: {
+            QVariant v;
+            v.setValue(pack);
+            return v;
+        }
+        case Qt::SizeHintRole:
+            return QSize(0, 58);
+        // Custom data
+        case UserDataTypes::TITLE:
+            return pack->name;
+        case UserDataTypes::DESCRIPTION:
+            return pack->description;
+        case UserDataTypes::INSTALLED:
+            return false;
+        default:
+            break;
+    }
+
+    return {};
+}
+
+bool ModpackListModel::setData(const QModelIndex& index, const QVariant& value, [[maybe_unused]] int role)
+{
+    int pos = index.row();
+    if (pos >= m_modpacks.size() || pos < 0 || !index.isValid()) {
+        return false;
+    }
+
+    m_modpacks[pos] = value.value<ModPlatform::IndexedPack::Ptr>();
+
+    return true;
+}
+
+void ModpackListModel::performPaginatedSearch()
+{
+    if (hasActiveSearchJob()) {
+        return;
+    }
+
+    // Modrinth ids are not limited to numbers and can be any length
+    if (m_searchState != ResetRequested && m_currentSearchTerm.startsWith("#")) {
+        auto projectId = m_currentSearchTerm.mid(1);
+        if (!projectId.isEmpty()) {
+            ResourceAPI::Callback<ModPlatform::IndexedPack::Ptr> callbacks;
+
+            callbacks.onFail = [this](const QString& reason, int networkErrorCode) {
+                if (networkErrorCode == 404) {
+                    m_searchState = ResetRequested;
+                }
+                searchRequestFailed(reason, networkErrorCode);
+            };
+            callbacks.onSucceed = [this](auto& pack) { searchRequestForOneSucceeded(pack); };
+            callbacks.onAbort = [this] {
+                qCritical() << "Search task aborted by an unknown reason!";
+                searchRequestFailed("Aborted", 0);
+            };
+            auto project = std::make_shared<ModPlatform::IndexedPack>();
+            project->addonId = projectId;
+            if (auto job = ModrinthAPI::get().getProjectInfo({ project }, callbacks, false); job) {
+                m_jobPtr = job;
+                m_jobPtr->start();
+            }
+            return;
+        }
+    }  // TODO: Move to standalone API
+    ResourceAPI::SortingMethod sort{};
+    sort.name = m_currentSort;
+
+    ResourceAPI::Callback<QList<ModPlatform::IndexedPack::Ptr>> callbacks{};
+
+    callbacks.onSucceed = [this](auto& doc) { searchRequestFinished(doc); };
+    callbacks.onFail = [this](const QString& reason, int networkErrorCode) { searchRequestFailed(reason, networkErrorCode); };
+    callbacks.onAbort = [this] {
+        qCritical() << "Search task aborted by an unknown reason!";
+        searchRequestFailed("Aborted", 0);
+    };
+
+    auto netJob = ModrinthAPI::get().searchProjects(
+        {
+            .type = ModPlatform::ResourceType::Modpack,
+            .offset = m_nextSearchOffset,
+            .search = m_currentSearchTerm,
+            .sorting = sort,
+            .loaders = m_filter->loaders,
+            .versions = m_filter->versions,
+            .side = ModPlatform::SideType::NoSide,
+            .categoryIds = m_filter->categoryIds,
+            .openSource = m_filter->openSource,
+            .excludeDisclosureTypes = m_filter->excludeDisclosureTypes,
+        },
+        callbacks);
+
+    m_jobPtr = netJob;
+    m_jobPtr->start();
+}
+
+void ModpackListModel::refresh()
+{
+    if (hasActiveSearchJob()) {
+        m_jobPtr->abort();
+        m_searchState = ResetRequested;
+        return;
+    }
+
+    beginResetModel();
+    m_modpacks.clear();
+    endResetModel();
+    m_searchState = None;
+
+    m_nextSearchOffset = 0;
+    performPaginatedSearch();
+}
+
+void ModpackListModel::searchWithTerm(const QString& term,
+                                      const int sort,
+                                      std::shared_ptr<ModFilterWidget::Filter> filter,
+                                      bool filterChanged)
+{
+    if (sort > 5 || sort < 0) {
+        return;
+    }
+
+    auto sortStr = sortFromIndex(sort);
+
+    if (m_currentSearchTerm == term && m_currentSearchTerm.isNull() == term.isNull() && m_currentSort == sortStr && !filterChanged) {
+        return;
+    }
+
+    m_currentSearchTerm = term;
+    m_currentSort = sortStr;
+    m_filter = std::move(filter);
+
+    refresh();
+}
+
+void ModpackListModel::getLogo(const QString& logo, const QString& logoUrl, const LogoCallback& callback)
+{
+    if (m_logoMap.contains(logo)) {
+        callback(APPLICATION->metacache()->resolveEntry(ModrinthPage::metaEntryBase(), QString("logos/%1").arg(logo))->getFullPath());
+    } else {
+        requestLogo(logo, logoUrl);
+    }
+}
+
+void ModpackListModel::requestLogo(const QString& logo, const QString& url)
+{
+    if (m_loadingLogos.contains(logo) || m_failedLogos.contains(logo) || url.isEmpty()) {
+        return;
+    }
+
+    MetaEntryPtr entry = APPLICATION->metacache()->resolveEntry(ModrinthPage::metaEntryBase(), QString("logos/%1").arg(logo));
+    auto* job = new NetJob(QString("%1 Icon Download %2").arg(ModrinthPage::debugName()).arg(logo), APPLICATION->network());
+    job->setAskRetry(false);
+    job->addNetAction(Net::ApiRequest::makeCached(QUrl(url), entry));
+
+    auto fullPath = entry->getFullPath();
+    connect(job, &NetJob::succeeded, this, [this, logo, fullPath, job] {
+        job->deleteLater();
+        emit logoLoaded(logo, QIcon(fullPath));
+        if (m_waitingCallbacks.contains(logo)) {
+            m_waitingCallbacks.value(logo)(fullPath);
+        }
+    });
+
+    connect(job, &NetJob::failed, this, [this, logo, job] {
+        job->deleteLater();
+        emit logoFailed(logo);
+    });
+
+    job->start();
+    m_loadingLogos.append(logo);
+}
+
+/******** Request callbacks ********/
+
+void ModpackListModel::logoLoaded(const QString& logo, const QIcon& out)
+{
+    m_loadingLogos.removeAll(logo);
+    m_logoMap.insert(logo, out);
+    for (int i = 0; i < m_modpacks.size(); i++) {
+        if (m_modpacks[i]->logoName == logo) {
+            emit dataChanged(createIndex(i, 0), createIndex(i, 0), { Qt::DecorationRole });
+        }
+    }
+}
+
+void ModpackListModel::logoFailed(const QString& logo)
+{
+    m_failedLogos.append(logo);
+    m_loadingLogos.removeAll(logo);
+}
+
+void ModpackListModel::searchRequestFinished(QList<ModPlatform::IndexedPack::Ptr>& newList)
+{
+    m_jobPtr.reset();
+
+    if (newList.size() < m_modpacksPerPage) {
+        m_searchState = Finished;
+    } else {
+        m_nextSearchOffset += m_modpacksPerPage;
+        m_searchState = CanPossiblyFetchMore;
+    }
+
+    // When you have a Qt build with assertions turned on, proceeding here will abort the application
+    if (newList.size() == 0) {
+        return;
+    }
+
+    beginInsertRows(QModelIndex(), static_cast<int>(m_modpacks.size()), static_cast<int>(m_modpacks.size() + newList.size() - 1));
+    m_modpacks.append(newList);
+    endInsertRows();
+}
+
+void ModpackListModel::searchRequestForOneSucceeded(ModPlatform::IndexedPack::Ptr pack)
+{
+    m_jobPtr.reset();
+
+    beginInsertRows(QModelIndex(), static_cast<int>(m_modpacks.size()), static_cast<int>(m_modpacks.size() + 1));
+    m_modpacks.append(pack);
+    endInsertRows();
+}
+
+void ModpackListModel::searchRequestFailed(const QString& /*reason*/, int networkErrorCode)
+{
+    if (networkErrorCode == -1) {
+        // Unknown error in network stack
+        QMessageBox::critical(nullptr, tr("Error"), tr("A network error occurred. Could not load modpacks."));
+    } else if (networkErrorCode == 409) {
+        // 409 Gone, notify user to update
+        QMessageBox::critical(nullptr, tr("Error"),
+                              //: %1 refers to the launcher itself
+                              QString("%1 %2")
+                                  .arg(m_parent->displayName())
+                                  .arg(tr("API version too old!\nPlease update %1!").arg(BuildConfig.LAUNCHER_DISPLAYNAME)));
+    }
+    m_jobPtr.reset();
+
+    if (m_searchState == ResetRequested) {
+        beginResetModel();
+        m_modpacks.clear();
+        endResetModel();
+
+        m_nextSearchOffset = 0;
+        performPaginatedSearch();
+    } else {
+        m_searchState = Finished;
+    }
+}
+
+}  // namespace Modrinth
+
+/******** Helpers ********/

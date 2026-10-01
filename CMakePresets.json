@@ -1,0 +1,114 @@
+{
+    "$schema": "https://cmake.org/cmake/help/latest/_downloads/3e2d73bff478d88a7de0de736ba5e361/schema.json",
+    "version": 8,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 28
+    },
+    "configurePresets": [
+        {
+            "name": "base",
+            "hidden": true,
+            "binaryDir": "build",
+            "installDir": "install",
+            "generator": "Ninja Multi-Config",
+            "toolchainFile": "cmake/vcpkg/scripts/buildsystems/vcpkg.cmake",
+            "cacheVariables": {
+                "Launcher_BUILD_ARTIFACT": "$penv{ARTIFACT_NAME}",
+                "Launcher_BUILD_PLATFORM": "$penv{BUILD_PLATFORM}",
+                "Launcher_ENABLE_JAVA_DOWNLOADER": "ON",
+                "ENABLE_LTO": "ON"
+            }
+        },
+        {
+            "name": "linux",
+            "displayName": "Linux",
+            "inherits": [
+                "base"
+            ],
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            }
+        },
+        {
+            "name": "windows_mingw",
+            "displayName": "Windows (MinGW)",
+            "inherits": [
+                "base"
+            ],
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "linux",
+            "displayName": "Linux",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            },
+            "configurePreset": "linux"
+        },
+        {
+            "name": "windows_mingw",
+            "displayName": "Windows (MinGW)",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            },
+            "configurePreset": "windows_mingw"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "base",
+            "hidden": true,
+            "output": {
+                "outputOnFailure": true,
+                "verbosity": "extra"
+            },
+            "execution": {
+                "noTestsAction": "error"
+            },
+            "filter": {
+                "exclude": {
+                    "name": "^example64|example$"
+                }
+            }
+        },
+        {
+            "name": "linux",
+            "displayName": "Linux",
+            "inherits": [
+                "base"
+            ],
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            },
+            "configurePreset": "linux"
+        },
+        {
+            "name": "windows_mingw",
+            "displayName": "Windows (MinGW)",
+            "inherits": [
+                "base"
+            ],
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            },
+            "configurePreset": "windows_mingw"
+        }
+    ]
+}

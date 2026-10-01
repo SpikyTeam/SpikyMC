@@ -1,0 +1,152 @@
+// SPDX-License-Identifier: GPL-3.0-only
+/*
+ *  SpikyMC - Minecraft Launcher
+ *  Copyright (c) 2022 Jamie Mansfield <jmansfield@cadixdev.org>
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, version 3.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * This file incorporates work covered by the following copyright and
+ * permission notice:
+ *
+ *      Copyright 2020-2021 Jamie Mansfield <jmansfield@cadixdev.org>
+ *      Copyright 2021 Petr Mrazek <peterix@gmail.com>
+ *
+ *      Licensed under the Apache License, Version 2.0 (the "License");
+ *      you may not use this file except in compliance with the License.
+ *      You may obtain a copy of the License at
+ *
+ *          http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *      Unless required by applicable law or agreed to in writing, software
+ *      distributed under the License is distributed on an "AS IS" BASIS,
+ *      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *      See the License for the specific language governing permissions and
+ *      limitations under the License.
+ */
+
+#pragma once
+
+#include <meta/VersionList.h>
+#include "ATLPackManifest.h"
+
+#include "InstanceTask.h"
+#include "meta/Version.h"
+#include "minecraft/MinecraftInstance.h"
+#include "minecraft/PackProfile.h"
+#include "net/NetJob.h"
+
+#include <cstdint>
+#include <optional>
+
+namespace ATLauncher {
+
+enum class InstallMode : std::uint8_t {
+    Install,
+    Reinstall,
+    Update,
+};
+
+class UserInteractionSupport {
+   public:
+    /**
+     * Requests a user interaction to select which optional mods should be installed.
+     */
+    virtual std::optional<QList<QString>> chooseOptionalMods(const PackVersion& version, QList<ATLauncher::VersionMod> mods) = 0;
+
+    /**
+     * Requests a user interaction to select a component version from a given version list
+     * and constrained to a given Minecraft version.
+     */
+    virtual QString chooseVersion(Meta::VersionList::Ptr vlist, QString minecraftVersion) = 0;
+
+    /**
+     * Requests a user interaction to display a message.
+     */
+    virtual void displayMessage(QString message) = 0;
+
+    virtual ~UserInteractionSupport() = default;
+};
+
+class PackInstallTask : public InstanceTask {
+    Q_OBJECT
+
+   public:
+    explicit PackInstallTask(UserInteractionSupport* support,
+                             QString packName,
+                             QString version,
+                             InstallMode installMode = InstallMode::Install);
+    ~PackInstallTask() override { delete m_support; }
+
+    bool canAbort() const override { return true; }
+    bool abort() override;
+
+   protected:
+    void executeTask() override;
+
+   private slots:
+    void onDownloadSucceeded(QByteArray* responsePtr);
+    void onDownloadFailed(QString reason);
+    void onDownloadAborted();
+
+    void onModsDownloaded();
+    void onModsExtracted();
+
+   private:
+    QString getDirForModType(ModType type, const QString& raw);
+    QString getVersionForLoader(const QString& uid);
+    static QString detectLibrary(const VersionLibrary& library);
+
+    bool createLibrariesComponent(const QString& instanceRoot, PackProfile* profile);
+    bool createPackComponent(const QString& instanceRoot, PackProfile* profile);
+
+    void deleteExistingFiles();
+    void installConfigs();
+    void extractConfigs();
+    void downloadMods();
+    bool extractMods(const QMap<QString, VersionMod>& toExtract,
+                     const QMap<QString, VersionMod>& toDecomp,
+                     const QMap<QString, QString>& toCopy);
+    void install();
+
+   private:
+    UserInteractionSupport* m_support;
+
+    bool m_abortable = false;
+
+    NetJob::Ptr m_jobPtr;
+
+    InstallMode m_installMode;
+    QString m_packName;
+    QString m_packSafeName;
+    QString m_versionName;
+    PackVersion m_version;
+
+    QMap<QString, VersionMod> m_modsToExtract;
+    QMap<QString, VersionMod> m_modsToDecomp;
+    QMap<QString, QString> m_modsToCopy;
+
+    QString m_archivePath;
+    QStringList m_jarmods;
+    Meta::Version::Ptr m_minecraftVersion;
+    QMap<QString, Meta::Version::Ptr> m_componentsToInstall;
+
+    QFuture<std::optional<QStringList>> m_extractFuture;
+    QFutureWatcher<std::optional<QStringList>> m_extractFutureWatcher;
+
+    QFuture<bool> m_modExtractFuture;
+    QFutureWatcher<bool> m_modExtractFutureWatcher;
+
+    std::unique_ptr<MinecraftInstance> m_instance;
+};
+
+}  // namespace ATLauncher

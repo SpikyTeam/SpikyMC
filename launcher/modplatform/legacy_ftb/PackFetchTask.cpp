@@ -1,0 +1,201 @@
+// SPDX-License-Identifier: GPL-3.0-only
+/*
+ *  SpikyMC - Minecraft Launcher
+ *  Copyright (C) 2022 Sefa Eyeoglu <contact@scrumplex.net>
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, version 3.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * This file incorporates work covered by the following copyright and
+ * permission notice:
+ *
+ *      Copyright 2013-2021 MultiMC Contributors
+ *
+ *      Licensed under the Apache License, Version 2.0 (the "License");
+ *      you may not use this file except in compliance with the License.
+ *      You may obtain a copy of the License at
+ *
+ *          http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *      Unless required by applicable law or agreed to in writing, software
+ *      distributed under the License is distributed on an "AS IS" BASIS,
+ *      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *      See the License for the specific language governing permissions and
+ *      limitations under the License.
+ */
+
+#include "PackFetchTask.h"
+
+#include <QDomDocument>
+#include "BuildConfig.h"
+
+#include "net/ApiRequest.h"
+
+namespace LegacyFTB {
+
+void PackFetchTask::fetch()
+{
+    m_publicPacks.clear();
+    m_thirdPartyPacks.clear();
+
+    m_jobPtr.reset(new NetJob("LegacyFTB::ModpackFetch", m_network));
+
+    QUrl publicPacksUrl = QUrl(BuildConfig.LEGACY_FTB_CDN_BASE_URL + "static/modpacks.xml");
+    qDebug() << "Downloading public version info from" << publicPacksUrl.toString();
+
+    auto [publicAction, publicResponse] = Net::ApiRequest::makeByteArray(publicPacksUrl);
+    m_jobPtr->addNetAction(publicAction);
+
+    QUrl thirdPartyUrl = QUrl(BuildConfig.LEGACY_FTB_CDN_BASE_URL + "static/thirdparty.xml");
+    qDebug() << "Downloading thirdparty version info from" << thirdPartyUrl.toString();
+
+    auto [thirdPartyAction, thirdPartyResponse] = Net::Request::makeByteArray(thirdPartyUrl);
+    m_jobPtr->addNetAction(thirdPartyAction);
+
+    connect(m_jobPtr.get(), &NetJob::succeeded, this,
+            [this, publicResponse, thirdPartyResponse] { fileDownloadFinished(publicResponse, thirdPartyResponse); });
+    connect(m_jobPtr.get(), &NetJob::failed, this, &PackFetchTask::fileDownloadFailed);
+    connect(m_jobPtr.get(), &NetJob::aborted, this, &PackFetchTask::fileDownloadAborted);
+
+    m_jobPtr->start();
+}
+
+void PackFetchTask::fetchPrivate(const QStringList& toFetch)
+{
+    QString privatePackBaseUrl = BuildConfig.LEGACY_FTB_CDN_BASE_URL + "static/%1.xml";
+
+    for (const auto& packCode : toFetch) {
+        auto* job = new NetJob("Fetching private pack", m_network);
+
+        auto [action, data] = Net::ApiRequest::makeByteArray(privatePackBaseUrl.arg(packCode));
+        job->addNetAction(action);
+        job->setAskRetry(false);
+
+        connect(job, &NetJob::succeeded, this, [this, job, data, packCode] {
+            ModpackList packs;
+            parseAndAddPacks(*data, PackType::Private, packs);
+            for (auto& currentPack : packs) {
+                currentPack.packCode = packCode;
+                emit privateFileDownloadFinished(currentPack);
+            }
+
+            job->deleteLater();
+        });
+
+        connect(job, &NetJob::failed, this, [this, job, packCode](const QString& reason) {
+            emit privateFileDownloadFailed(reason, packCode);
+            job->deleteLater();
+        });
+
+        connect(job, &NetJob::aborted, this, [this, job] {
+            job->deleteLater();
+
+            emit aborted();
+        });
+
+        job->start();
+    }
+}
+
+void PackFetchTask::fileDownloadFinished(QByteArray* publicResponse, QByteArray* thirdPartyResponse)
+{
+    QStringList failedLists;
+
+    if (!parseAndAddPacks(*publicResponse, PackType::Public, m_publicPacks)) {
+        failedLists.append(tr("Public Packs"));
+    }
+
+    if (!parseAndAddPacks(*thirdPartyResponse, PackType::ThirdParty, m_thirdPartyPacks)) {
+        failedLists.append(tr("Third Party Packs"));
+    }
+
+    // NOTE(TheKodeToad): we don't want to reset the jobPtr earlier as it may invalidate the responses!
+    m_jobPtr.reset();
+
+    if (failedLists.size() > 0) {
+        emit failed(tr("Failed to download some pack lists: %1").arg(failedLists.join("\n- ")));
+    } else {
+        emit finished(m_publicPacks, m_thirdPartyPacks);
+    }
+}
+
+bool PackFetchTask::parseAndAddPacks(QByteArray& data, PackType packType, ModpackList& list)
+{
+    QDomDocument doc;
+
+    auto result = doc.setContent(data);
+    if (!result) {
+        const QString fullErrMsg =
+            QString("Failed to fetch modpack data: %1 %2:%3!").arg(result.errorMessage).arg(result.errorLine).arg(result.errorColumn);
+        qWarning() << fullErrMsg;
+        return false;
+    }
+
+    QDomNodeList nodes = doc.elementsByTagName("modpack");
+    for (int i = 0; i < nodes.length(); i++) {
+        QDomElement element = nodes.at(i).toElement();
+
+        Modpack modpack;
+        modpack.name = element.attribute("name");
+        modpack.currentVersion = element.attribute("version");
+        modpack.mcVersion = element.attribute("mcVersion");
+        modpack.description = element.attribute("description");
+        modpack.mods = element.attribute("mods");
+        modpack.logo = element.attribute("logo");
+        modpack.oldVersions = element.attribute("oldVersions").split(";");
+        modpack.broken = false;
+        modpack.bugged = false;
+
+        // remove empty if the xml is bugged
+        for (const auto& curr : modpack.oldVersions) {
+            if (curr.isNull() || curr.isEmpty()) {
+                modpack.oldVersions.removeAll(curr);
+                modpack.bugged = true;
+                qWarning() << "Removed some empty versions from" << modpack.name;
+            }
+        }
+
+        if (modpack.oldVersions.size() < 1) {
+            if (!modpack.currentVersion.isNull() && !modpack.currentVersion.isEmpty()) {
+                modpack.oldVersions.append(modpack.currentVersion);
+                qWarning() << "Added current version to oldVersions because oldVersions was empty! (" + modpack.name + ")";
+            } else {
+                modpack.broken = true;
+                qWarning() << "Broken pack:" << modpack.name << "=> No valid version!";
+            }
+        }
+
+        modpack.author = element.attribute("author");
+
+        modpack.dir = element.attribute("dir");
+        modpack.file = element.attribute("url");
+
+        modpack.type = packType;
+
+        list.append(modpack);
+    }
+
+    return true;
+}
+
+void PackFetchTask::fileDownloadFailed(const QString& reason)
+{
+    qWarning() << "Fetching FTBPacks failed:" << reason;
+    emit failed(reason);
+}
+
+void PackFetchTask::fileDownloadAborted()
+{
+    emit aborted();
+}
+
+}  // namespace LegacyFTB
