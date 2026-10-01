@@ -21,6 +21,7 @@ class FlameUpdateRootTest : public QObject {
         // BaseInstance's constructor requires these to exist in the global settings object.
         global->registerSetting("ShowGameTime", true);
         global->registerSetting("RecordGameTime", true);
+        global->registerSetting("PreLoadCommand", QString());
         global->registerSetting("PreLaunchCommand", QString());
         global->registerSetting("WrapperCommand", QString());
         global->registerSetting("PostExitCommand", QString());
@@ -30,6 +31,36 @@ class FlameUpdateRootTest : public QObject {
         global->registerSetting("LogPrePostOutput", true);
         global->registerSetting("ConsoleMaxLines", 100000);
         global->registerSetting("ConsoleOverflowStop", 100000);
+
+        global->registerSetting("JavaPath", "");
+        global->registerSetting("JvmArgs", "");
+        global->registerSetting("IgnoreJavaCompatibility", false);
+        global->registerSetting("JavaSignature", "");
+        global->registerSetting("JavaArchitecture", "");
+        global->registerSetting("JavaRealArchitecture", "");
+        global->registerSetting("JavaVersion", "");
+        global->registerSetting("JavaVendor", "");
+        global->registerSetting({ "LaunchMaximized", "MCWindowMaximize" }, false);
+        global->registerSetting({ "MinecraftWinWidth", "MCWindowWidth" }, 854);
+        global->registerSetting({ "MinecraftWinHeight", "MCWindowHeight" }, 480);
+        global->registerSetting({ "MinMemAlloc", "MinMemoryAlloc" }, 512);
+        global->registerSetting({ "MaxMemAlloc", "MaxMemoryAlloc" }, 1024);
+        global->registerSetting("PermGen", 128);
+        global->registerSetting("LowMemWarning", true);
+        global->registerSetting("UseNativeOpenAL", false);
+        global->registerSetting("CustomOpenALPath", "");
+        global->registerSetting("UseNativeGLFW", false);
+        global->registerSetting("CustomGLFWPath", "");
+        global->registerSetting("UseNativeSDL", false);
+        global->registerSetting("CustomSDLPath", "");
+        global->registerSetting("EnableFeralGamemode", false);
+        global->registerSetting("EnableMangoHud", false);
+        global->registerSetting("UseDiscreteGpu", false);
+        global->registerSetting("UseZink", false);
+        global->registerSetting("CloseAfterLaunch", false);
+        global->registerSetting("QuitAfterGameStop", false);
+        global->registerSetting("OnlineFixes", false);
+        global->registerSetting("Env", "{}");
 
         m_globalSettings = std::move(global);
     }
