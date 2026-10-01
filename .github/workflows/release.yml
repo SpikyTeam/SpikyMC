@@ -40,7 +40,7 @@ jobs:
         run: |
           mv SpikyMC-Linux-Qt6-Portable*/SpikyMC-portable.tar.gz SpikyMC-Linux-Qt6-Portable-${{ env.VERSION }}.tar.gz
           mv SpikyMC-*.AppImage/SpikyMC-*-x86_64.AppImage SpikyMC-Linux-x86_64.AppImage
-          mv SpikyMC-*.AppImage/SpikyMC-*-x86_64.AppImage.zsync SpikyMC-Linux-x86_64.AppImage.zsync
+          mv SpikyMC-*.AppImage.zsync/SpikyMC-*-x86_64.AppImage.zsync SpikyMC-Linux-x86_64.AppImage.zsync
 
           # Only two Windows builds are published: the installer and the portable zip.
           # A plain (non-portable) zip would also be picked up by this glob, but the
