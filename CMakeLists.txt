@@ -431,6 +431,13 @@ if(NOT (UNIX AND APPLE))
     install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/${Launcher_Portable_File}" DESTINATION "." COMPONENT portable EXCLUDE_FROM_ALL)
 endif()
 
+# The GPL requires the license text to travel with every distributed copy, but this
+# project had no install rule for it at all. Portable packages are assembled from a
+# full install plus the "portable" component, so one unscoped rule covers the AppImage,
+# both portable archives and the Windows installer (which whitelists files in
+# win_install.nsi.in).
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE" "${CMAKE_CURRENT_SOURCE_DIR}/COPYING.md" DESTINATION "share/${Launcher_Name}")
+
 if(UNIX AND APPLE)
     set(BINARY_DEST_DIR "${Launcher_Name}.app/Contents/MacOS")
     set(LIBRARY_DEST_DIR "${Launcher_Name}.app/Contents/MacOS")

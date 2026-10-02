@@ -387,6 +387,12 @@ Section "@Launcher_DisplayName@"
   File /r "styles"
   File /nonfatal /r "tls"
 
+  ; The GPL requires the license text to travel with every distributed copy
+  SetOutPath "$INSTDIR\share\@Launcher_CommonName@"
+  File /nonfatal "share\@Launcher_CommonName@\LICENSE"
+  File /nonfatal "share\@Launcher_CommonName@\COPYING.md"
+  SetOutPath $INSTDIR
+
   ; Write the installation path into the registry
   WriteRegStr HKCU Software\@Launcher_CommonName@ "InstallDir" "$INSTDIR"
 
