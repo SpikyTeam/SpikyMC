@@ -474,6 +474,16 @@ SectionEnd
 
 ; Uninstaller
 
+; Removes a URL protocol handler, but only when it still points at this
+; installation, so that a handler some other program has taken over is
+; never clobbered on uninstall.
+!macro RemoveOwnURLHandler handler
+  ReadRegStr $R0 HKCU "Software\Classes\${handler}\shell\open\command" ""
+  ${If} $R0 == '"$INSTDIR\@Launcher_APP_BINARY_NAME@.exe" "%1"'
+    DeleteRegKey HKCU "Software\Classes\${handler}"
+  ${EndIf}
+!macroend
+
 Section "Uninstall"
 
   nsExec::Exec /TIMEOUT=2000 'TaskKill /IM @Launcher_APP_BINARY_NAME@.exe /F'
@@ -481,10 +491,18 @@ Section "Uninstall"
   DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\@Launcher_CommonName@"
   DeleteRegKey HKCU SOFTWARE\@Launcher_CommonName@
 
+  ; The URL handlers registered during install. Install writes the launcher
+  ; binary name and the "spikymc" protocol to the same registry key, so the
+  ; latter covers both.
+  !insertmacro RemoveOwnURLHandler "curseforge"
+  !insertmacro RemoveOwnURLHandler "modrinth"
+  !insertmacro RemoveOwnURLHandler "spikymc"
+
   Delete $INSTDIR\@Launcher_APP_BINARY_NAME@.exe
   Delete $INSTDIR\@Launcher_APP_BINARY_NAME@_filelink.exe
   Delete $INSTDIR\@Launcher_APP_BINARY_NAME@_updater.exe
   Delete $INSTDIR\qt.conf
+  Delete $INSTDIR\qtlogging.ini
   Delete $INSTDIR\*.dll
 
   Delete $INSTDIR\uninstall.exe
@@ -495,6 +513,7 @@ Section "Uninstall"
   RMDir /r $INSTDIR\platforms
   RMDir /r $INSTDIR\styles
   RMDir /r $INSTDIR\tls
+  RMDir /r $INSTDIR\share
 
   Delete "$SMPROGRAMS\@Launcher_DisplayName@.lnk"
   Delete "$DESKTOP\@Launcher_DisplayName@.lnk"
