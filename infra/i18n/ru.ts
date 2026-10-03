@@ -103,4 +103,32 @@
         <translation>Запуск...</translation>
     </message>
 </context>
+<context>
+    <name>LoginWizardPage</name>
+    <message>
+        <location filename="launcher/ui/setupwizard/LoginWizardPage.ui" line="20"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; font-weight:600;&quot;&gt;Add a Minecraft account&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; font-weight:600;&quot;&gt;Добавить учётную запись Minecraft&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <location filename="launcher/ui/setupwizard/LoginWizardPage.ui" line="33"/>
+        <source>You can play with a Microsoft account or with an offline account (just a username you choose). Both work — pick whichever suits you. You can add, change or remove accounts at any time in the Accounts section.</source>
+        <translation>Можно играть с учётной записью Microsoft или с автономной учётной записью (просто придумайте ник). Оба варианта работают — выбирайте любой. Добавлять, менять и удалять учётные записи можно в любой момент в разделе «Учётные записи».</translation>
+    </message>
+    <message>
+        <location filename="launcher/ui/setupwizard/LoginWizardPage.ui" line="50"/>
+        <source>Add Microsoft account</source>
+        <translation>Добавить учётную запись Microsoft</translation>
+    </message>
+    <message>
+        <location filename="launcher/ui/setupwizard/LoginWizardPage.ui" line="57"/>
+        <source>Add offline account</source>
+        <translation>Добавить автономную учётную запись</translation>
+    </message>
+    <message>
+        <location filename="launcher/ui/setupwizard/LoginWizardPage.cpp" line="55"/>
+        <source>Please enter your desired username to add your offline account.</source>
+        <translation>Введите имя пользователя для создания автономной учётной записи.</translation>
+    </message>
+</context>
 </TS>
