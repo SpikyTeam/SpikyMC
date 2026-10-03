@@ -432,7 +432,7 @@
     <message>
         <source>Offline</source>
         <comment>Account status</comment>
-        <translation type="vanished">Автономная</translation>
+        <translation type="vanished">Автономна</translation>
     </message>
     <message>
         <source>Online</source>
@@ -455,7 +455,7 @@
         <location filename="src/launcher/minecraft/auth/AccountList.cpp" line="351"/>
         <source>Unknown</source>
         <comment>Account type</comment>
-        <translation>Неизвестно</translation>
+        <translation>Неизвестна</translation>
     </message>
     <message>
         <source>Ready</source>
@@ -500,7 +500,7 @@
     <message>
         <source>N/A</source>
         <comment>Can Migrate</comment>
-        <translation type="vanished">Н/Д</translation>
+        <translation type="vanished">Н/П</translation>
     </message>
     <message>
         <source>Yes</source>
@@ -4763,11 +4763,11 @@ NOTE: Make sure you made a backup of your important instance data before updatin
     <name>ImportResourcePackDialog</name>
     <message>
         <source>Choose instance to import</source>
-        <translation type="vanished">Выберите сборку для импорта</translation>
+        <translation type="vanished">Выберите экземпляр для импорта</translation>
     </message>
     <message>
         <source>Choose the instance you would like to import this resource pack to.</source>
-        <translation type="vanished">Выберите сборку, в которую вы хотите импортировать этот пакет ресурсов.</translation>
+        <translation type="vanished">Выберите экземпляр, в который вы хотите импортировать этот пакет ресурсов.</translation>
     </message>
 </context>
 <context>
@@ -4947,7 +4947,7 @@ What would you like to do with %2?</source>
     <name>InstanceCreationTask</name>
     <message>
         <source>Creating instance from version %1</source>
-        <translation type="vanished">Создание сборки на основе версии %1</translation>
+        <translation type="vanished">Создание экземпляра на основе версии %1</translation>
     </message>
     <message>
         <source>Error while creating new instance:
@@ -5026,7 +5026,7 @@ What would you like to do with %2?</source>
     </message>
     <message>
         <source>Instance import has been aborted.</source>
-        <translation type="vanished">Импорт сборки был отменён.</translation>
+        <translation type="vanished">Импорт экземпляра был отменён.</translation>
     </message>
     <message>
         <source>Could not understand pack manifest:
@@ -7274,7 +7274,7 @@ You may have to fix your mods because the game is still logging to files and lik
     <message>
         <location filename="src/launcher/ui/pages/global/LauncherPage.ui" line="178"/>
         <source>Opens the edit instance window on double-clicking an instance instead of running the instance.</source>
-        <translation>Открывает окно редактирования при двойном щелчке по сборке вместо запуска.</translation>
+        <translation>Открывает окно редактирования при двойном щелчке по экземпляру вместо запуска.</translation>
     </message>
     <message>
         <location filename="src/launcher/ui/pages/global/LauncherPage.ui" line="181"/>
@@ -7854,7 +7854,7 @@ Should it be removed now?</source>
     </message>
     <message>
         <source>Instance from previous versions.</source>
-        <translation type="vanished">Создание сборки на основе версии %1.</translation>
+        <translation type="vanished">Экземпляр из предыдущих версий.</translation>
     </message>
 </context>
 <context>
@@ -7865,7 +7865,7 @@ Should it be removed now?</source>
     </message>
     <message>
         <source>Upgrade the instance</source>
-        <translation type="vanished">Обновить сборку</translation>
+        <translation type="vanished">Обновить экземпляр</translation>
     </message>
     <message>
         <source>Error</source>
@@ -7888,11 +7888,11 @@ Should it be removed now?</source>
     <name>LegacyUpgradeTask</name>
     <message>
         <source>Copying instance %1</source>
-        <translation type="vanished">Копирование сборки %1</translation>
+        <translation type="vanished">Копирование экземпляра %1</translation>
     </message>
     <message>
         <source>Instance folder copy failed.</source>
-        <translation type="vanished">Не удалось скопировать папку сборки.</translation>
+        <translation type="vanished">Не удалось скопировать папку экземпляра.</translation>
     </message>
     <message>
         <source>Could not decide Minecraft version.</source>
@@ -7900,7 +7900,7 @@ Should it be removed now?</source>
     </message>
     <message>
         <source>Instance folder copy has been aborted.</source>
-        <translation type="vanished">Копирование папки сборки было отменено.</translation>
+        <translation type="vanished">Копирование папки экземпляра было отменено.</translation>
     </message>
 </context>
 <context>
@@ -8376,7 +8376,7 @@ Reason:
     </message>
     <message>
         <source>Kill the running instance</source>
-        <translation type="vanished">Остановить запущенную сборку</translation>
+        <translation type="vanished">Остановить запущенный экземпляр</translation>
     </message>
     <message>
         <source>Launch</source>
@@ -8394,21 +8394,21 @@ Reason:
     </message>
     <message>
         <source>Add Instance</source>
-        <translation type="vanished">Добавить сборку</translation>
+        <translation type="vanished">Добавить экземпляр</translation>
     </message>
     <message>
         <location filename="src/launcher/ui/MainWindow.ui" line="293"/>
         <source>Add a new instance.</source>
-        <translation>Добавить новую сборку.</translation>
+        <translation>Добавить новый экземпляр.</translation>
     </message>
     <message>
         <source>&amp;View Instance Folder</source>
         <oldsource>View Instance Folder</oldsource>
-        <translation type="vanished">Открыть папку со сборка&amp;ми</translation>
+        <translation type="vanished">Открыть папку с экземпляра&amp;ми</translation>
     </message>
     <message>
         <source>Open the instance folder in a file browser.</source>
-        <translation type="vanished">Открыть папку со сборками в файловом менеджере.</translation>
+        <translation type="vanished">Открыть папку с экземплярами в файловом менеджере.</translation>
     </message>
     <message>
         <source>View &amp;Central Mods Folder</source>
@@ -8421,7 +8421,7 @@ Reason:
     </message>
     <message>
         <source>Dele&amp;te Instance</source>
-        <translation type="vanished">Удалить сборку</translation>
+        <translation type="vanished">Удалить экземпляр</translation>
     </message>
     <message>
         <location filename="src/launcher/ui/MainWindow.ui" line="700"/>
@@ -8984,7 +8984,7 @@ Reason:
     </message>
     <message>
         <source>Launch the selected instance in demo mode.</source>
-        <translation type="vanished">Запуск выбранной сборки в демо-режиме.</translation>
+        <translation type="vanished">Запуск выбранного экземпляра в демо-режиме.</translation>
     </message>
     <message>
         <location filename="src/launcher/ui/MainWindow.ui" line="362"/>
@@ -9040,11 +9040,11 @@ Reason:
     </message>
     <message>
         <source>&amp;Instance Folder</source>
-        <translation type="vanished">Папка сборки</translation>
+        <translation type="vanished">Папка экземпляра</translation>
     </message>
     <message>
         <source>E&amp;xport Instance...</source>
-        <translation type="vanished">Экспорт сборки...</translation>
+        <translation type="vanished">Экспорт экземпляра...</translation>
     </message>
     <message>
         <source>Ctrl+E</source>
@@ -9052,7 +9052,7 @@ Reason:
     </message>
     <message>
         <source>Dele&amp;te Instance...</source>
-        <translation type="vanished">Удалить сборку...</translation>
+        <translation type="vanished">Удалить экземпляр...</translation>
     </message>
     <message>
         <location filename="src/launcher/ui/MainWindow.cpp" line="252"/>
@@ -9061,7 +9061,7 @@ Reason:
     </message>
     <message>
         <source>Cop&amp;y Instance...</source>
-        <translation type="vanished">Скопировать сборку...</translation>
+        <translation type="vanished">Скопировать экземпляр...</translation>
     </message>
     <message>
         <location filename="src/launcher/ui/MainWindow.ui" line="448"/>
@@ -9074,11 +9074,11 @@ Reason:
     </message>
     <message>
         <source>Launch the selected instance in offline mode.</source>
-        <translation type="vanished">Запустить выбранную сборку в автономном режиме.</translation>
+        <translation type="vanished">Запустить выбранный экземпляр в автономном режиме.</translation>
     </message>
     <message>
         <source>Edit Instance</source>
-        <translation type="vanished">Редактировать сборку</translation>
+        <translation type="vanished">Редактировать экземпляр</translation>
     </message>
     <message>
         <location filename="src/launcher/ui/MainWindow.ui" line="406"/>
@@ -9091,7 +9091,7 @@ Reason:
     </message>
     <message>
         <source>Edit the notes for the selected instance.</source>
-        <translation type="vanished">Редактировать заметки для выбранной сборки.</translation>
+        <translation type="vanished">Редактировать заметки для выбранного экземпляра.</translation>
     </message>
     <message>
         <source>View Mods</source>
@@ -9117,7 +9117,7 @@ Reason:
     </message>
     <message>
         <source>View and upload screenshots for this instance.</source>
-        <translation type="vanished">Просмотр и загрузка в интернет скриншотов для этой сборки.</translation>
+        <translation type="vanished">Просмотр и загрузка в интернет скриншотов для этого экземпляра.</translation>
     </message>
     <message>
         <source>Change Group</source>
@@ -9147,7 +9147,7 @@ Reason:
     </message>
     <message>
         <source>Instance Folder</source>
-        <translation type="vanished">Папка сборки</translation>
+        <translation type="vanished">Папка экземпляра</translation>
     </message>
     <message>
         <location filename="src/launcher/ui/MainWindow.ui" line="420"/>
@@ -9156,20 +9156,20 @@ Reason:
     </message>
     <message>
         <source>Export Instance</source>
-        <translation type="vanished">Экспортировать сборку</translation>
+        <translation type="vanished">Экспортировать экземпляр</translation>
     </message>
     <message>
         <source>Export the selected instance as a zip file.</source>
-        <translation type="vanished">Экспорт выбранной сборки как zip архив.</translation>
+        <translation type="vanished">Экспорт выбранного экземпляра как zip архив.</translation>
     </message>
     <message>
         <source>Delete Instance</source>
         <oldsource>Delete</oldsource>
-        <translation type="vanished">Удалить сборку</translation>
+        <translation type="vanished">Удалить экземпляр</translation>
     </message>
     <message>
         <source>Copy Instance</source>
-        <translation type="vanished">Копировать сборку</translation>
+        <translation type="vanished">Копировать экземпляр</translation>
     </message>
     <message>
         <location filename="src/launcher/ui/MainWindow.ui" line="445"/>
@@ -9293,7 +9293,7 @@ Reason:
 Please add a Microsoft account.</source>
         <oldsource>The launcher cannot download Minecraft or update instances unless you have at least one account added.
 Please add your Microsoft or Mojang account.</oldsource>
-        <translation type="vanished">Лаунчер не может скачивать Minecraft или обновлять сборки до тех пор, пока не будет добавлена хотя бы одна учётная запись.
+        <translation type="vanished">Лаунчер не может скачивать Minecraft или обновлять экземпляры до тех пор, пока не будет добавлена хотя бы одна учётная запись.
 Пожалуйста, добавьте учётную запись Microsoft.</translation>
     </message>
     <message>
@@ -9427,7 +9427,7 @@ This is permanent and will completely delete the instance.
 
 Are you sure?</source>
         <translation type="vanished">Вы собираетесь удалить: %1
-Это действие необратимо и полностью удалит сборку.
+Это действие необратимо и полностью удалит экземпляр.
 
 Вы уверены?</translation>
     </message>
@@ -11997,11 +11997,11 @@ Please update %1!</source>
     </message>
     <message>
         <source>The following files are not available for download in third party launchers.&lt;br/&gt;You will need to manually download them and add them to the instance.</source>
-        <translation type="vanished">Следующие файлы недоступны для загрузки в сторонних лаунчерах.&lt;br/&gt;Вам нужно будет вручную загрузить их и добавить в сборку.</translation>
+        <translation type="vanished">Следующие файлы недоступны для загрузки в сторонних лаунчерах.&lt;br/&gt;Вам нужно будет вручную загрузить их и добавить в экземпляр.</translation>
     </message>
     <message>
         <source>Creating the instance...</source>
-        <translation type="vanished">Создание сборки...</translation>
+        <translation type="vanished">Создание экземпляра...</translation>
     </message>
     <message>
         <source>Downloading mods...</source>
@@ -18229,7 +18229,7 @@ Please switch to one of the following Java versions for this instance:</source>
     </message>
     <message>
         <source>Remove selected package from the instance.</source>
-        <translation type="vanished">Удалить выбранный пакет из сборки.</translation>
+        <translation type="vanished">Удалить выбранный пакет из экземпляра.</translation>
     </message>
     <message>
         <location filename="src/launcher/ui/pages/instance/VersionPage.ui" line="140"/>
@@ -18622,7 +18622,7 @@ Are you sure?</source>
     <message>
         <source>PolyMC cannot download Minecraft or update instances unless you have at least one account added.
 Please add your Mojang or Minecraft account.</source>
-        <translation type="vanished">PolyMC не может скачать Minecraft или обновить сборки, так как необходимо добавить хотя бы одну учетную запись.
+        <translation type="vanished">PolyMC не может скачать Minecraft или обновить экземпляры, так как необходимо добавить хотя бы одну учетную запись.
 Пожалуйста, добавьте учётную запись Mojang или Minecraft.</translation>
     </message>
     <message>
