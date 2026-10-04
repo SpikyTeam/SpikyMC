@@ -172,11 +172,6 @@ set(UPDATE_SOURCES
     updater/ExternalUpdater.h
 )
 
-set(MAC_UPDATE_SOURCES
-    updater/MacSparkleUpdater.h
-    updater/MacSparkleUpdater.mm
-)
-
 set(SPIKYMC_UPDATE_SOURCES
     updater/SpikyMCExternalUpdater.h
     updater/SpikyMCExternalUpdater.cpp
@@ -754,11 +749,7 @@ set(LOGIC_SOURCES
     ${ATLAUNCHER_SOURCES}
 )
 
-if(APPLE AND Launcher_ENABLE_UPDATER)
-    set (LOGIC_SOURCES ${LOGIC_SOURCES} ${MAC_UPDATE_SOURCES})
-else()
-    set (LOGIC_SOURCES ${LOGIC_SOURCES} ${SPIKYMC_UPDATE_SOURCES})
-endif()
+set (LOGIC_SOURCES ${LOGIC_SOURCES} ${SPIKYMC_UPDATE_SOURCES})
 
 SET(LAUNCHER_SOURCES
     # Application base
@@ -1272,30 +1263,7 @@ if (TARGET ${Launcher_QT_DBUS})
     target_compile_definitions(Launcher_logic PUBLIC WITH_QTDBUS)
 endif()
 
-if(APPLE)
-    set(CMAKE_MACOSX_RPATH 1)
-    set(CMAKE_INSTALL_RPATH "@loader_path/../Frameworks/")
-
-    if(Launcher_ENABLE_UPDATER)
-        file(DOWNLOAD ${MACOSX_SPARKLE_DOWNLOAD_URL} ${CMAKE_BINARY_DIR}/Sparkle.tar.xz EXPECTED_HASH SHA256=${MACOSX_SPARKLE_SHA256})
-        file(ARCHIVE_EXTRACT INPUT ${CMAKE_BINARY_DIR}/Sparkle.tar.xz DESTINATION ${CMAKE_BINARY_DIR}/frameworks/Sparkle)
-
-        find_library(SPARKLE_FRAMEWORK Sparkle "${CMAKE_BINARY_DIR}/frameworks/Sparkle")
-        add_compile_definitions(SPARKLE_ENABLED)
-    endif()
-
-    target_link_libraries(Launcher_logic
-        "-framework AppKit"
-        "-framework Carbon"
-        "-framework Foundation"
-        "-framework ApplicationServices"
-    )
-    if(Launcher_ENABLE_UPDATER)
-        target_link_libraries(Launcher_logic ${SPARKLE_FRAMEWORK})
-    endif()
-endif()
-
-add_executable(${Launcher_Name} MACOSX_BUNDLE WIN32 main.cpp ${LAUNCHER_RCS})
+add_executable(${Launcher_Name} WIN32 main.cpp ${LAUNCHER_RCS})
 
 if(${Launcher_USE_PCH})
     target_precompile_headers(${Launcher_Name} REUSE_FROM Launcher_logic)
@@ -1320,7 +1288,6 @@ install(TARGETS ${Launcher_Name}
     BUNDLE DESTINATION "." COMPONENT Runtime
     LIBRARY DESTINATION ${LIBRARY_DEST_DIR} COMPONENT Runtime
     RUNTIME DESTINATION ${BINARY_DEST_DIR} COMPONENT Runtime
-    FRAMEWORK DESTINATION ${FRAMEWORK_DEST_DIR} COMPONENT Runtime
 )
 
 # Deploy PDBs
@@ -1371,7 +1338,6 @@ if(Launcher_BUILD_UPDATER)
         BUNDLE DESTINATION "." COMPONENT Runtime
         LIBRARY DESTINATION ${LIBRARY_DEST_DIR} COMPONENT Runtime
         RUNTIME DESTINATION ${BINARY_DEST_DIR} COMPONENT Runtime
-        FRAMEWORK DESTINATION ${FRAMEWORK_DEST_DIR} COMPONENT Runtime
     )
 
     # Deploy PDBs
@@ -1426,20 +1392,12 @@ if(WIN32 OR (DEFINED Launcher_BUILD_FILELINKER AND Launcher_BUILD_FILELINKER))
         BUNDLE DESTINATION "." COMPONENT Runtime
         LIBRARY DESTINATION ${LIBRARY_DEST_DIR} COMPONENT Runtime
         RUNTIME DESTINATION ${BINARY_DEST_DIR} COMPONENT Runtime
-        FRAMEWORK DESTINATION ${FRAMEWORK_DEST_DIR} COMPONENT Runtime
     )
 
     # Deploy PDBs
     if(CMAKE_CXX_LINKER_SUPPORTS_PDB)
         install(FILES $<TARGET_PDB_FILE:${Launcher_Name}_filelink> DESTINATION ${BINARY_DEST_DIR} OPTIONAL)
     endif()
-endif()
-
-if (UNIX AND APPLE AND Launcher_ENABLE_UPDATER)
-    # Add Sparkle updater
-    # It has to be copied here instead of just allowing fixup_bundle to install it, otherwise essential parts of
-    # the framework aren't installed
-    install(DIRECTORY ${MACOSX_SPARKLE_DIR}/Sparkle.framework DESTINATION ${FRAMEWORK_DEST_DIR} USE_SOURCE_PERMISSIONS)
 endif()
 
 # Set basic compiler warning/error flags for all targets
@@ -1507,7 +1465,6 @@ if(WIN32 OR (UNIX AND APPLE))
             "system32"
         LIBRARY DESTINATION ${LIBRARY_DEST_DIR}
         RUNTIME DESTINATION ${BINARY_DEST_DIR}
-        FRAMEWORK DESTINATION ${FRAMEWORK_DEST_DIR}
     )
     # Deploy Qt plugins
     install(

@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 3.25) # Required for features like `CMAKE_MSVC_DEBUG_INFORMATION_FORMAT`
 
 project(Launcher LANGUAGES C CXX)
-if(APPLE)
-    enable_language(OBJC OBJCXX)
-endif()
 
 string(COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_BUILD_DIR}" IS_IN_SOURCE_BUILD)
 if(IS_IN_SOURCE_BUILD)
@@ -239,7 +236,7 @@ set(Launcher_ENABLE_JAVA_DOWNLOADER_DEFAULT ON)
 # Although we recommend enabling this, we cannot guarantee binary compatibility on
 # differing Linux/BSD/etc distributions. Downstream packagers should be explicitly opt-ing into this
 # feature if they know it will work with their distribution.
-if(UNIX AND NOT APPLE)
+if(UNIX)
     set(Launcher_ENABLE_JAVA_DOWNLOADER_DEFAULT OFF)
 endif()
 
@@ -247,11 +244,7 @@ endif()
 option(Launcher_ENABLE_JAVA_DOWNLOADER "Build the java downloader feature" ${Launcher_ENABLE_JAVA_DOWNLOADER_DEFAULT})
 
 # Native libraries
-if(UNIX AND APPLE)
-    set(Launcher_GLFW_LIBRARY_NAME "libglfw.dylib" CACHE STRING "Name of native glfw library")
-    set(Launcher_OPENAL_LIBRARY_NAME "libopenal.dylib" CACHE STRING "Name of native openal library")
-    set(Launcher_SDL_LIBRARY_NAME "libSDL3.dylib" CACHE STRING "Name of native sdl library")
-elseif(UNIX)
+if(UNIX)
     set(Launcher_GLFW_LIBRARY_NAME "libglfw.so" CACHE STRING "Name of native glfw library")
     set(Launcher_OPENAL_LIBRARY_NAME "libopenal.so" CACHE STRING "Name of native openal library")
     set(Launcher_SDL_LIBRARY_NAME "libSDL3.so" CACHE STRING "Name of native sdl library")
@@ -422,14 +415,12 @@ add_subdirectory(program_info)
 set(Launcher_ENABLE_UPDATER NO)
 set(Launcher_BUILD_UPDATER NO)
 
-if (NOT APPLE AND (NOT Launcher_UPDATER_GITHUB_REPO STREQUAL "" AND NOT Launcher_BUILD_ARTIFACT STREQUAL ""))
+if (NOT Launcher_UPDATER_GITHUB_REPO STREQUAL "" AND NOT Launcher_BUILD_ARTIFACT STREQUAL "")
     set(Launcher_BUILD_UPDATER YES)
 endif()
 
-if(NOT (UNIX AND APPLE))
-    # Install "portable.txt" if selected component is "portable"
-    install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/${Launcher_Portable_File}" DESTINATION "." COMPONENT portable EXCLUDE_FROM_ALL)
-endif()
+# Install "portable.txt" if selected component is "portable"
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/${Launcher_Portable_File}" DESTINATION "." COMPONENT portable EXCLUDE_FROM_ALL)
 
 # The GPL requires the license text to travel with every distributed copy, but this
 # project had no install rule for it at all. Portable packages are assembled from a
@@ -438,84 +429,7 @@ endif()
 # win_install.nsi.in).
 install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE" "${CMAKE_CURRENT_SOURCE_DIR}/COPYING.md" DESTINATION "share/${Launcher_Name}")
 
-if(UNIX AND APPLE)
-    set(BINARY_DEST_DIR "${Launcher_Name}.app/Contents/MacOS")
-    set(LIBRARY_DEST_DIR "${Launcher_Name}.app/Contents/MacOS")
-    set(PLUGIN_DEST_DIR "${Launcher_Name}.app/Contents/MacOS")
-    set(FRAMEWORK_DEST_DIR "${Launcher_Name}.app/Contents/Frameworks")
-    set(RESOURCES_DEST_DIR "${Launcher_Name}.app/Contents/Resources")
-    set(JARS_DEST_DIR "${Launcher_Name}.app/Contents/MacOS/jars")
-
-    # Mac bundle settings
-    set(MACOSX_BUNDLE_BUNDLE_NAME "${Launcher_DisplayName}")
-    set(MACOSX_BUNDLE_INFO_STRING "${Launcher_DisplayName}: A custom launcher for Minecraft that allows you to easily manage multiple installations of Minecraft at once.")
-    set(MACOSX_BUNDLE_GUI_IDENTIFIER "${Launcher_AppID}")
-    set(MACOSX_BUNDLE_BUNDLE_VERSION "${Launcher_VERSION_NAME}")
-    set(MACOSX_BUNDLE_SHORT_VERSION_STRING "${Launcher_VERSION_NAME}")
-    set(MACOSX_BUNDLE_LONG_VERSION_STRING "${Launcher_VERSION_NAME}")
-    set(MACOSX_BUNDLE_ICON_FILE ${Launcher_Name}.icns)
-    set(MACOSX_BUNDLE_COPYRIGHT "${Launcher_Copyright_Mac}")
-    set(MACOSX_SPARKLE_UPDATE_PUBLIC_KEY "4nHfeKCzvX+8mHbS9VJFmHVQ246LsGycmFQ17letQxU=" CACHE STRING "Public key for Sparkle update feed")
-    set(MACOSX_SPARKLE_UPDATE_FEED_URL "" CACHE STRING "URL for Sparkle update feed")
-
-    set(MACOSX_SPARKLE_DOWNLOAD_URL "https://github.com/sparkle-project/Sparkle/releases/download/2.9.6/Sparkle-2.9.6.tar.xz" CACHE STRING "URL to Sparkle release archive")
-    set(MACOSX_SPARKLE_SHA256 "52bf9e88cdd972fc0c81501377a880e90d47031bd8ca5462488f843e2609e192" CACHE STRING "SHA256 checksum for Sparkle release archive")
-    set(MACOSX_SPARKLE_DIR "${CMAKE_BINARY_DIR}/frameworks/Sparkle")
-
-    if(NOT MACOSX_SPARKLE_UPDATE_PUBLIC_KEY STREQUAL "" AND NOT MACOSX_SPARKLE_UPDATE_FEED_URL STREQUAL "")
-        set(Launcher_ENABLE_UPDATER YES)
-    endif()
-
-    # Add the icon
-    install(FILES ${Launcher_Branding_ICNS} DESTINATION ${RESOURCES_DEST_DIR} RENAME ${Launcher_Name}.icns)
-
-    find_program(ACTOOL_EXE actool DOC "Path to the apple asset catalog compiler")
-    if(ACTOOL_EXE)
-        execute_process(
-            COMMAND xcodebuild -version
-            OUTPUT_VARIABLE XCODE_VERSION_OUTPUT
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-        )
-
-        string(REGEX MATCH "Xcode ([0-9]+\.[0-9]+)" XCODE_VERSION_MATCH "${XCODE_VERSION_OUTPUT}")
-        if(XCODE_VERSION_MATCH)
-            set(XCODE_VERSION ${CMAKE_MATCH_1})
-        else()
-            set(XCODE_VERSION 0.0)
-        endif()
-
-        if(XCODE_VERSION VERSION_GREATER_EQUAL 26.0)
-            set(ASSETS_OUT_DIR "${CMAKE_BINARY_DIR}/program_info")
-            set(GENERATED_ASSETS_CAR "${ASSETS_OUT_DIR}/Assets.car")
-            set(ICON_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/${Launcher_Branding_MAC_ICON}")
-
-            add_custom_command(
-                OUTPUT "${GENERATED_ASSETS_CAR}"
-                COMMAND ${ACTOOL_EXE} "${ICON_SOURCE}"
-                        --compile "${ASSETS_OUT_DIR}"
-                        --output-partial-info-plist /dev/null
-                        --app-icon ${Launcher_Name}
-                        --enable-on-demand-resources NO
-                        --target-device mac
-                        --minimum-deployment-target ${CMAKE_OSX_DEPLOYMENT_TARGET}
-                        --platform macosx
-                DEPENDS "${ICON_SOURCE}"
-                COMMENT "Compiling asset catalog (${ICON_SOURCE})"
-                VERBATIM
-            )
-            add_custom_target(compile_assets ALL DEPENDS "${GENERATED_ASSETS_CAR}")
-            install(FILES "${GENERATED_ASSETS_CAR}" DESTINATION "${RESOURCES_DEST_DIR}")
-        else()
-            message(WARNING "Xcode ${XCODE_VERSION} is too old. Minimum required version is 26.0. Not compiling liquid glass icons.")
-        endif()
-
-    else()
-        message(WARNING "actool not found. Cannot compile macOS app icons.\n"
-                "Install Xcode command line tools: 'xcode-select --install'")
-    endif()
-
-
-elseif(UNIX)
+if(UNIX)
     include(KDEInstallDirs)
 
     set(BINARY_DEST_DIR "bin")

@@ -151,13 +151,7 @@
 #include <sys/types.h>
 #endif
 
-#if defined(Q_OS_MAC)
-#if defined(SPARKLE_ENABLED)
-#include "updater/MacSparkleUpdater.h"
-#endif
-#else
 #include "updater/SpikyMCExternalUpdater.h"
-#endif
 
 #if defined Q_OS_WIN32
 #ifndef WIN32_LEAN_AND_MEAN
@@ -1435,13 +1429,7 @@ void Application::performMainStartupAction()
     // initialize the updater
     if (updaterEnabled()) {
         qDebug() << "Initializing updater";
-#ifdef Q_OS_MAC
-#if defined(SPARKLE_ENABLED)
-        m_updater.reset(new MacSparkleUpdater());
-#endif
-#else
         m_updater.reset(new SpikyMCExternalUpdater(m_mainWindow, m_rootPath, m_dataPath));
-#endif
         qDebug() << "<> Updater started.";
     }
 
