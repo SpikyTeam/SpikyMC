@@ -29,7 +29,8 @@ Development builds are available through:
 
 These have debug information in the binaries, so their file sizes are relatively larger.
 
-Prebuilt Development builds are provided for **Linux**, **Windows** and **macOS**.
+Prebuilt Development builds are provided for **Linux** and **Windows**.
+
 ## Building
 
 If you want to build SpikyMC yourself, check the [build instructions](https://prismlauncher.org/wiki/development/build-instructions)
