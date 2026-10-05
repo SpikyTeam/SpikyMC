@@ -5,11 +5,13 @@ import os
 import subprocess
 import sys
 
-SRC_BASE = "https://i18n.prismlauncher.org/"
-DST_DIR = "/var/www/mc.spiky.team/i18n/"
-WORK_DIR = "/opt/spikymc-meta/i18n-work/"
+# the defaults describe the server layout; the environment overrides let the same
+# scripts run from a checkout, e.g. from GitHub Actions
+SRC_BASE = os.environ.get("I18N_SRC_BASE", "https://i18n.prismlauncher.org/")
+DST_DIR = os.environ.get("I18N_DST_DIR", "/var/www/mc.spiky.team/i18n/")
+WORK_DIR = os.environ.get("I18N_WORK_DIR", "/opt/spikymc-meta/i18n-work/")
 INDEX = os.path.join(WORK_DIR, "index_v2.json")
-MIN_PERCENT = 90.0
+MIN_PERCENT = float(os.environ.get("I18N_MIN_PERCENT", "90"))
 
 os.makedirs(DST_DIR, exist_ok=True)
 os.makedirs(WORK_DIR, exist_ok=True)

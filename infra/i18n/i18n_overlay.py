@@ -3,15 +3,21 @@ import glob
 import hashlib
 import json
 import os
+import shutil
 import subprocess
 import sys
 
-DST_DIR = "/var/www/mc.spiky.team/i18n/"
-OVERLAY_DIR = "/opt/spikymc-meta/i18n-overlay/"
-WORK_DIR = "/opt/spikymc-meta/i18n-work/"
+# the defaults describe the server layout; the environment overrides let the same
+# scripts run from a checkout, e.g. from GitHub Actions
+DST_DIR = os.environ.get("I18N_DST_DIR", "/var/www/mc.spiky.team/i18n/")
+OVERLAY_DIR = os.environ.get("I18N_OVERLAY_DIR", "/opt/spikymc-meta/i18n-overlay/")
+WORK_DIR = os.environ.get("I18N_WORK_DIR", "/opt/spikymc-meta/i18n-work/")
+# optional directory holding base-<code>.ts files, used only to seed a missing
+# work-dir base file
+BASE_TS_DIR = os.environ.get("I18N_BASE_TS_DIR", "")
 WORK_INDEX = os.path.join(WORK_DIR, "index_v2.json")
-LCONVERT = "/usr/bin/lconvert"
-LRELEASE = "/usr/bin/lrelease"
+LCONVERT = os.environ.get("I18N_LCONVERT") or shutil.which("lconvert") or "/usr/bin/lconvert"
+LRELEASE = os.environ.get("I18N_LRELEASE") or shutil.which("lrelease") or "/usr/bin/lrelease"
 
 
 def run(cmd):
@@ -42,6 +48,11 @@ def main():
             continue
         info = lang_map[code]
         base_ts = os.path.join(WORK_DIR, code + "-base.ts")
+        if not os.path.exists(base_ts) and BASE_TS_DIR:
+            seeded = os.path.join(BASE_TS_DIR, "base-" + code + ".ts")
+            if os.path.exists(seeded):
+                shutil.copyfile(seeded, base_ts)
+                print("seeded base ts from", seeded)
         if not os.path.exists(base_ts):
             print("SKIP (base ts missing):", code, base_ts)
             continue
