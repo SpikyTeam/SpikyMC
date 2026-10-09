@@ -52,6 +52,7 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionAddEly"/>
    <addaction name="actionAddMicrosoft"/>
    <addaction name="actionAddOffline"/>
    <addaction name="actionRefresh"/>
@@ -87,6 +88,11 @@
   <action name="actionAddMicrosoft">
    <property name="text">
     <string>&amp;Add Microsoft</string>
+   </property>
+  </action>
+  <action name="actionAddEly">
+   <property name="text">
+    <string>&amp;Add Ely.by</string>
    </property>
   </action>
   <action name="actionAddOffline">
