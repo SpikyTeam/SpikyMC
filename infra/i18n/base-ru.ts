@@ -635,14 +635,16 @@
     </message>
     <message>
         <location filename="src/launcher/ui/pages/global/AccountListPage.ui" line="94"/>
+        <source>&amp;Add Ely.by</source>
+        <translation>В&amp;ойти через Ely.by</translation>
+    </message>
+    <message>
+    <message>
+        <location filename="src/launcher/ui/pages/global/AccountListPage.ui" line="99"/>
         <source>Add &amp;Offline</source>
         <oldsource>Add Offline</oldsource>
         <translation>До&amp;бавить автономную</translation>
     </message>
-    <message>
-        <location filename="src/launcher/ui/pages/global/AccountListPage.ui" line="99"/>
-        <source>&amp;Refresh</source>
-        <oldsource>Refresh</oldsource>
         <translation>&amp;Обновить</translation>
     </message>
     <message>
