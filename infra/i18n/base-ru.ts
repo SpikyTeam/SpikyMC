@@ -8131,9 +8131,9 @@ Reason:
         <translation>Учётная запись Microsoft</translation>
     </message>
     <message>
-        <location filename="src/launcher/ui/setupwizard/LoginWizardPage.ui" line="66"/>
-        <source>Ely.by account</source>
-        <translation>Учётная запись Ely.by</translation>
+        <location filename="src/launcher/ui/setupwizard/LoginWizardPage.ui" line="56"/>
+        <source>Ely.by account (Recommended)</source>
+        <translation>Учётная запись Ely.by (рекомендуется)</translation>
     </message>
     <message>
         <location filename="src/launcher/ui/setupwizard/LoginWizardPage.ui" line="71"/>
@@ -8151,9 +8151,9 @@ Reason:
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Microsoft&lt;/span&gt; - для тех, кто купил игру. Настоящий аккаунт, заходи на любой сервер.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="src/launcher/ui/setupwizard/LoginWizardPage.ui" line="100"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Ely.by&lt;/span&gt; - free, for those without the game. Works on most pirate servers, supports custom skins. Some servers only let you in with Ely.by.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Ely.by&lt;/span&gt; - бесплатно, для тех, у кого нет игры. Работает на большинстве пиратских серверов, поддерживает свои скины. Некоторые сервера пускают только с аккаунтом Ely.by.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <location filename="src/launcher/ui/setupwizard/LoginWizardPage.ui" line="89"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Ely.by&lt;/span&gt; (Recommended) - free, for those without the game. Works on most pirate servers, supports custom skins. Some servers only let you in with Ely.by.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Ely.by&lt;/span&gt; (рекомендуется) - бесплатно, для тех, у кого нет игры. Работает на большинстве пиратских серверов, поддерживает свои скины. Некоторые сервера пускают только с аккаунтом Ely.by.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="src/launcher/ui/setupwizard/LoginWizardPage.ui" line="111"/>
