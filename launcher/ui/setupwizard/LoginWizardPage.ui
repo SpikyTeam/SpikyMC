@@ -96,7 +96,7 @@
       <item>
        <widget class="QLabel" name="elyInfo">
         <property name="text">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Ely.by&lt;/span&gt; - free, for those without the game. Works on most pirate servers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Ely.by&lt;/span&gt; - free, for those without the game. Works on most pirate servers, supports custom skins. Some servers only let you in with Ely.by.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="textFormat">
          <enum>Qt::RichText</enum>

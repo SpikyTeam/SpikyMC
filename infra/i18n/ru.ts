@@ -147,8 +147,8 @@
     </message>
     <message>
         <location filename="launcher/ui/setupwizard/LoginWizardPage.ui" line="100"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Ely.by&lt;/span&gt; - free, for those without the game. Works on most pirate servers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Ely.by&lt;/span&gt; - бесплатно, для тех, у кого нет игры. Работает на большинстве пиратских серверов.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Ely.by&lt;/span&gt; - free, for those without the game. Works on most pirate servers, supports custom skins. Some servers only let you in with Ely.by.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Ely.by&lt;/span&gt; - бесплатно, для тех, у кого нет игры. Работает на большинстве пиратских серверов, поддерживает свои скины. Некоторые сервера пускают только с аккаунтом Ely.by.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="launcher/ui/setupwizard/LoginWizardPage.ui" line="111"/>
