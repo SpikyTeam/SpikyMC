@@ -77,7 +77,6 @@ class LaunchController : public Task {
     void launchInstance();
     void decideAccount();
     LaunchDecision decideLaunchMode();
-    bool askPlayDemo() const;
     QString askOfflineName(const QString& playerName, bool* ok = nullptr);
     bool reauthenticateAccount(const MinecraftAccountPtr& account, const QString& reason);
 

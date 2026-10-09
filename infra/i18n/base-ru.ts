@@ -6492,9 +6492,8 @@ You can change the Java version in the settings later.
     </message>
     <message>
         <location filename="src/launcher/LaunchController.cpp" line="99"/>
-        <source>In order to play Minecraft, you must have at least one Microsoft account which owns Minecraft logged in. Would you like to open the account manager to add an account now?</source>
-        <oldsource>In order to play Minecraft, you must have at least one Microsoft account which owns Minecraft logged in.Would you like to open the account manager to add an account now?</oldsource>
-        <translation>Чтобы играть в Minecraft необходимо войти хотя бы в одну учётную запись компани Microsoft, которая владеет правами на Minecraft. Открыть менеджер учётных записей, чтобы добавить новую?</translation>
+        <source>To play Minecraft, you need to add at least one account. Would you like to open the account manager to add one now?</source>
+        <translation>Чтобы играть в Minecraft, нужно добавить хотя бы одну учётную запись. Открыть менеджер учётных записей, чтобы добавить новую?</translation>
     </message>
     <message>
         <location filename="src/launcher/LaunchController.cpp" line="116"/>

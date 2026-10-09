@@ -93,12 +93,11 @@ void LaunchController::decideAccount()
         m_accountToUse = accounts->at(instanceAccountIndex);
     }
 
-    if (!accounts->anyAccountIsValid()) {
-        // Tell the user they need to log in at least one account in order to play.
+    if (accounts->isEmpty()) {
+        // Tell the user they need at least one account in order to play.
         auto reply = CustomMessageBox::selectable(m_parentWidget, tr("No Accounts"),
-                                                  tr("In order to play Minecraft, you must have at least one Microsoft "
-                                                     "account which owns Minecraft logged in. "
-                                                     "Would you like to open the account manager to add an account now?"),
+                                                  tr("To play Minecraft, you need to add at least one account. "
+                                                     "Would you like to open the account manager to add one now?"),
                                                   QMessageBox::Information, QMessageBox::Yes | QMessageBox::No)
                          ->exec();
 
@@ -111,7 +110,7 @@ void LaunchController::decideAccount()
         }
     }
 
-    if (!m_accountToUse && accounts->anyAccountIsValid()) {
+    if (!m_accountToUse && !accounts->isEmpty()) {
         // If no default account is set, ask the user which one to use.
         ProfileSelectDialog selectDialog(tr("Which account would you like to use?"), ProfileSelectDialog::GlobalDefaultCheckbox,
                                          m_parentWidget);
@@ -195,24 +194,6 @@ LaunchDecision LaunchController::decideLaunchMode()
     return LaunchDecision::Abort;
 }
 
-bool LaunchController::askPlayDemo() const
-{
-    QMessageBox box(m_parentWidget);
-    box.setWindowTitle(tr("Play demo?"));
-    QString text = m_accountToUse
-                       ? tr("This account does not own Minecraft.\nYou need to purchase the game first to play the full version.")
-                       : tr("No account was selected for launch.");
-    text += tr("\n\nDo you want to play the demo?");
-    box.setText(text);
-    box.setIcon(QMessageBox::Warning);
-    const auto* demoButton = box.addButton(tr("Play Demo"), QMessageBox::ButtonRole::YesRole);
-    auto* cancelButton = box.addButton(tr("Cancel"), QMessageBox::ButtonRole::NoRole);
-    box.setDefaultButton(cancelButton);
-
-    box.exec();
-    return box.clickedButton() == demoButton;
-}
-
 QString LaunchController::askOfflineName(const QString& playerName, bool* ok)
 {
     if (ok != nullptr) {
@@ -276,7 +257,7 @@ void LaunchController::login()
     }
 
     if (m_actualLaunchMode == LaunchMode::Demo) {
-        if (m_wantedLaunchMode == LaunchMode::Demo || askPlayDemo()) {
+        if (m_wantedLaunchMode == LaunchMode::Demo) {
             bool ok = false;
             auto name = askOfflineName("Player", &ok);
             if (ok) {
@@ -293,7 +274,7 @@ void LaunchController::login()
 
     m_session = std::make_shared<AuthSession>();
     m_session->launchMode = m_actualLaunchMode;
-    m_accountToUse->fillSession(m_session);
+    m_accountToUse->fillSession(m_session, m_instance->settings()->get("ElyPatchPreference").toInt());
 
     if (m_accountToUse->accountType() != AccountType::Offline) {
         if (m_actualLaunchMode == LaunchMode::Normal && !m_accountToUse->hasProfile()) {

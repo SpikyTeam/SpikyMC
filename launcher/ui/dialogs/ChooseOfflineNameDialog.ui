@@ -27,25 +27,15 @@
      </property>
     </widget>
    </item>
-   <item>
-    <widget class="QLineEdit" name="usernameTextBox">
-     <property name="placeholderText">
-      <string>Username</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QCheckBox" name="allowInvalidUsernames">
-     <property name="toolTip">
-      <string>A username is valid only if it is from 3 to 16 characters in length, uses English letters, numbers, and underscores. An invalid username may prevent joining servers and singleplayer worlds.</string>
-     </property>
-     <property name="text">
-      <string>Allow invalid usernames</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QDialogButtonBox" name="buttonBox">
+<item>
+     <widget class="QLineEdit" name="usernameTextBox">
+      <property name="placeholderText">
+       <string>Username</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="standardButtons">
       <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
      </property>

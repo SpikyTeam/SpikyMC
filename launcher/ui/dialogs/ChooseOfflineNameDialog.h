@@ -19,7 +19,6 @@
 #pragma once
 
 #include <QDialog>
-#include <QRegularExpressionValidator>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -38,13 +37,5 @@ class ChooseOfflineNameDialog final : public QDialog {
     void setUsername(const QString& username) const;
 
    private:
-    void updateAcceptAllowed(const QString& username) const;
-
-   protected slots:
-    void on_usernameTextBox_textEdited(const QString& newText) const;
-    void on_allowInvalidUsernames_checkStateChanged(Qt::CheckState checkState) const;
-
-   private:
     Ui::ChooseOfflineNameDialog* ui;
-    QRegularExpressionValidator* m_usernameValidator;
 };
