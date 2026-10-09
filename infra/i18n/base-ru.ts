@@ -8113,18 +8113,53 @@ Reason:
     </message>
     <message>
         <location filename="src/launcher/ui/setupwizard/LoginWizardPage.ui" line="20"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; font-weight:600;&quot;&gt;Add Microsoft account&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; font-weight:600;&quot;&gt;Добавить учётную запись Microsoft&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; font-weight:600;&quot;&gt;Add a Minecraft account&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; font-weight:600;&quot;&gt;Добавить учётную запись Minecraft&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="src/launcher/ui/setupwizard/LoginWizardPage.ui" line="33"/>
-        <source>In order to play Minecraft, you must have at least one Microsoft account logged in. Do you want to log in now?</source>
-        <translation>Чтобы играть в Minecraft, необходимо иметь хотя бы одну учётную запись Microsoft. Войти сейчас?</translation>
+        <source>Pick an account to play. You can add more or switch between them at any time in the Accounts section.</source>
+        <translation>Выберите аккаунт для игры. Добавить ещё или переключиться между ними можно в любой момент в разделе «Учётные записи».</translation>
     </message>
     <message>
-        <location filename="src/launcher/ui/setupwizard/LoginWizardPage.ui" line="50"/>
-        <source>Add Microsoft account</source>
-        <translation>Добавить учётную запись Microsoft</translation>
+        <location filename="src/launcher/ui/setupwizard/LoginWizardPage.ui" line="55"/>
+        <source>Sign in</source>
+        <translation>Вход в аккаунт</translation>
+    </message>
+    <message>
+        <location filename="src/launcher/ui/setupwizard/LoginWizardPage.ui" line="61"/>
+        <source>Microsoft account</source>
+        <translation>Учётная запись Microsoft</translation>
+    </message>
+    <message>
+        <location filename="src/launcher/ui/setupwizard/LoginWizardPage.ui" line="66"/>
+        <source>Ely.by account</source>
+        <translation>Учётная запись Ely.by</translation>
+    </message>
+    <message>
+        <location filename="src/launcher/ui/setupwizard/LoginWizardPage.ui" line="71"/>
+        <source>Offline account</source>
+        <translation>Автономная учётная запись</translation>
+    </message>
+    <message>
+        <location filename="src/launcher/ui/setupwizard/LoginWizardPage.ui" line="76"/>
+        <source>What's the difference?</source>
+        <translation>В чём разница?</translation>
+    </message>
+    <message>
+        <location filename="src/launcher/ui/setupwizard/LoginWizardPage.ui" line="89"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Microsoft&lt;/span&gt; - the official account that owns Minecraft Java Edition. Best if you have the game.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Microsoft&lt;/span&gt; - официальный аккаунт, на котором куплена Minecraft Java Edition. Лучший выбор, если игра есть.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <location filename="src/launcher/ui/setupwizard/LoginWizardPage.ui" line="100"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Ely.by&lt;/span&gt; - free, recommended if you don&apos;t own the game. Some servers only let you in with an Ely.by account.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Ely.by&lt;/span&gt; - бесплатно, рекомендуем, если нет лицензии. Некоторые сервера пускают только с аккаунтом Ely.by.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <location filename="src/launcher/ui/setupwizard/LoginWizardPage.ui" line="111"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Offline&lt;/span&gt; - just a nickname, no account. Only servers with offline mode enabled will work.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Автономно&lt;/span&gt; - просто ник, без аккаунта. Оно заработает только на серверах с включённым офлайн-режимом.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
 </context>
 <context>

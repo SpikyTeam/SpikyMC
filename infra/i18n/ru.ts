@@ -112,23 +112,113 @@
     </message>
     <message>
         <location filename="launcher/ui/setupwizard/LoginWizardPage.ui" line="33"/>
-        <source>You can play with a Microsoft account or with an offline account (just a username you choose). Both work — pick whichever suits you. You can add, change or remove accounts at any time in the Accounts section.</source>
-        <translation>Можно играть с учётной записью Microsoft или с автономной учётной записью (просто придумайте ник). Оба варианта работают — выбирайте любой. Добавлять, менять и удалять учётные записи можно в любой момент в разделе «Учётные записи».</translation>
+        <source>Pick an account to play. You can add more or switch between them at any time in the Accounts section.</source>
+        <translation>Выберите аккаунт для игры. Добавить ещё или переключиться между ними можно в любой момент в разделе «Учётные записи».</translation>
     </message>
     <message>
-        <location filename="launcher/ui/setupwizard/LoginWizardPage.ui" line="50"/>
-        <source>Add Microsoft account</source>
-        <translation>Добавить учётную запись Microsoft</translation>
+        <location filename="launcher/ui/setupwizard/LoginWizardPage.ui" line="55"/>
+        <source>Sign in</source>
+        <translation>Вход в аккаунт</translation>
     </message>
     <message>
-        <location filename="launcher/ui/setupwizard/LoginWizardPage.ui" line="57"/>
-        <source>Add offline account</source>
-        <translation>Добавить автономную учётную запись</translation>
+        <location filename="launcher/ui/setupwizard/LoginWizardPage.ui" line="61"/>
+        <source>Microsoft account</source>
+        <translation>Учётная запись Microsoft</translation>
     </message>
     <message>
-        <location filename="launcher/ui/setupwizard/LoginWizardPage.cpp" line="55"/>
+        <location filename="launcher/ui/setupwizard/LoginWizardPage.ui" line="66"/>
+        <source>Ely.by account</source>
+        <translation>Учётная запись Ely.by</translation>
+    </message>
+    <message>
+        <location filename="launcher/ui/setupwizard/LoginWizardPage.ui" line="71"/>
+        <source>Offline account</source>
+        <translation>Автономная учётная запись</translation>
+    </message>
+    <message>
+        <location filename="launcher/ui/setupwizard/LoginWizardPage.ui" line="76"/>
+        <source>What's the difference?</source>
+        <translation>В чём разница?</translation>
+    </message>
+    <message>
+        <location filename="launcher/ui/setupwizard/LoginWizardPage.ui" line="89"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Microsoft&lt;/span&gt; - the official account that owns Minecraft Java Edition. Best if you have the game.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Microsoft&lt;/span&gt; - официальный аккаунт, на котором куплена Minecraft Java Edition. Лучший выбор, если игра есть.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <location filename="launcher/ui/setupwizard/LoginWizardPage.ui" line="100"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Ely.by&lt;/span&gt; - free, recommended if you don&apos;t own the game. Some servers only let you in with an Ely.by account.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Ely.by&lt;/span&gt; - бесплатно, рекомендуем, если нет лицензии. Некоторые сервера пускают только с аккаунтом Ely.by.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <location filename="launcher/ui/setupwizard/LoginWizardPage.ui" line="111"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Offline&lt;/span&gt; - just a nickname, no account. Only servers with offline mode enabled will work.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Автономно&lt;/span&gt; - просто ник, без аккаунта. Оно заработает только на серверах с включённым офлайн-режимом.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <location filename="launcher/ui/setupwizard/LoginWizardPage.cpp" line="64"/>
         <source>Please enter your desired username to add your offline account.</source>
         <translation>Введите имя пользователя для создания автономной учётной записи.</translation>
+    </message>
+</context>
+<context>
+    <name>ElyStep</name>
+    <message>
+        <location filename="launcher/minecraft/auth/steps/ElyStep.cpp" line="33"/>
+        <source>Logging in with Ely.by account.</source>
+        <translation>Вход через учётную запись Ely.by.</translation>
+    </message>
+</context>
+<context>
+    <name>ElyDeviceCodeStep</name>
+    <message>
+        <location filename="launcher/minecraft/auth/steps/ElyDeviceCodeStep.cpp" line="33"/>
+        <source>Logging in with Ely.by account(device code).</source>
+        <translation>Вход через учётную запись Ely.by (код устройства).</translation>
+    </message>
+</context>
+<context>
+    <name>ElyYggdrasilTokenStep</name>
+    <message>
+        <location filename="launcher/minecraft/auth/steps/ElyYggdrasilTokenStep.cpp" line="25"/>
+        <source>Updating Yggdrasil token</source>
+        <translation>Обновление токена Yggdrasil</translation>
+    </message>
+    <message>
+        <location filename="launcher/minecraft/auth/steps/ElyYggdrasilTokenStep.cpp" line="31"/>
+        <source>Yggdrasil token update succeeded</source>
+        <translation>Обновление токена Yggdrasil выполнено успешно</translation>
+    </message>
+</context>
+<context>
+    <name>ElyPatchTask</name>
+    <message>
+        <location filename="launcher/minecraft/update/ElyPatchTask.cpp" line="33"/>
+        <source>Preparing Ely.by patch...</source>
+        <translation>Подготовка патча Ely.by...</translation>
+    </message>
+    <message>
+        <location filename="launcher/minecraft/update/ElyPatchTask.cpp" line="88"/>
+        <source>Resolving authlib-injector</source>
+        <translation>Поиск authlib-injector</translation>
+    </message>
+    <message>
+        <location filename="launcher/minecraft/update/ElyPatchTask.cpp" line="112"/>
+        <source>Couldn't get recommended authlib-injector version</source>
+        <translation>Не удалось получить рекомендуемую версию authlib-injector</translation>
+    </message>
+</context>
+<context>
+    <name>ElyLoginDialog</name>
+    <message>
+        <location filename="launcher/ui/dialogs/ElyLoginDialog.cpp" line="30"/>
+        <source>Add Ely.by account</source>
+        <translation>Добавить учётную запись Ely.by</translation>
+    </message>
+    <message>
+        <location filename="launcher/ui/dialogs/ElyLoginDialog.cpp" line="31"/>
+        <source>Sign in with Ely.by</source>
+        <translation>Войти через Ely.by</translation>
     </message>
 </context>
 </TS>
