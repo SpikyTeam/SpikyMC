@@ -505,12 +505,12 @@
     <message>
         <source>Yes</source>
         <comment>Can Migrate</comment>
-        <translation type="vanished">Да</translation>
+        <translation>Да</translation>
     </message>
     <message>
         <source>No</source>
         <comment>Can Migrate</comment>
-        <translation type="vanished">Нет</translation>
+        <translation>Нет</translation>
     </message>
     <message>
         <source>N/A</source>
@@ -520,12 +520,12 @@
     <message>
         <source>Yes</source>
         <comment>Can Migrate?</comment>
-        <translation type="vanished">Да</translation>
+        <translation>Да</translation>
     </message>
     <message>
         <source>No</source>
         <comment>Can Migrate?</comment>
-        <translation type="vanished">Нет</translation>
+        <translation>Нет</translation>
     </message>
     <message>
         <location filename="src/launcher/minecraft/auth/AccountList.cpp" line="378"/>
@@ -18125,7 +18125,7 @@ Are you sure?</source>
     </message>
     <message>
         <source>None</source>
-        <translation type="vanished">Нет</translation>
+        <translation>Нет</translation>
     </message>
     <message>
         <source>Forge</source>
