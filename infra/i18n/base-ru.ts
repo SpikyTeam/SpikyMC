@@ -646,8 +646,8 @@
     </message>
     <message>
         <location filename="src/launcher/ui/pages/global/AccountListPage.ui" line="102"/>
-        <source>Refresh the account tokens</source>
-        <translation>Обновить токены учётной записи</translation>
+        <source>&amp;Refresh</source>
+        <translation>&amp;Обновить</translation>
     </message>
     <message>
         <location filename="src/launcher/ui/pages/global/AccountListPage.ui" line="112"/>
