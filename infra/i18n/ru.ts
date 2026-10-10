@@ -221,4 +221,5 @@
         <translation>Войти через Ely.by</translation>
     </message>
 </context>
+<context><name>AccountListPage</name><message><location filename="launcher/ui/pages/global/AccountListPage.ui" line="94"/><source>&amp;Add Ely.by</source><translation>В&amp;ойти через Ely.by</translation></message></context>
 </TS>
