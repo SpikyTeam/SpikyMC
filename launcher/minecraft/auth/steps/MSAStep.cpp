@@ -118,7 +118,8 @@ MSAStep::MSAStep(AccountData* data, bool silent, QString clientId, QString scope
     : AuthStep(data), m_silent(silent)
 {
     m_clientId = !clientId.isEmpty() ? clientId : APPLICATION->getMSAClientID();
-    if (QCoreApplication::applicationFilePath().startsWith("/tmp/.mount_") || APPLICATION->isPortable() || !isSchemeHandlerRegistered() || clientId.isEmpty())
+    if (QCoreApplication::applicationFilePath().startsWith("/tmp/.mount_") || m_data->type == AccountType::Ely || APPLICATION->isPortable() ||
+        !isSchemeHandlerRegistered() || clientId.isEmpty())
 
 {
         auto replyHandler = new LoggingOAuthHttpServerReplyHandler(QHostAddress::Any, 0, this);
