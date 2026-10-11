@@ -5,3 +5,10 @@
 *.ps1 text eol=crlf
 *.bat text eol=crlf
 *.cmd text eol=crlf
+
+# Config files should use LF
+.envrc text eol=lf
+.markdownlintignore text eol=lf
+.editorconfig text eol=lf
+.gitignore text eol=lf
+.gitattributes text eol=lf
