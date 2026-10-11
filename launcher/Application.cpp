@@ -784,6 +784,9 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
         // Legacy settings
         m_settings->registerSetting("OnlineFixes", false);
 
+        // Ely settings
+        m_settings->registerSetting("ElyPatchPreference", 1);
+
         // Native library workarounds
         m_settings->registerSetting("UseNativeOpenAL", false);
         m_settings->registerSetting("CustomOpenALPath", "");
@@ -913,6 +916,9 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
 
         // Custom Microsoft Authentication Client ID
         m_settings->registerSetting("MSAClientIDOverride", "");
+
+        // Custom Ely.by Accounts OAuth ID
+        m_settings->registerSetting("ElyClientIDOverride", "");
 
         // Custom Flame API Key
         m_settings->registerSetting({ "FlameKeyOverride", "CFKeyOverride" }, "");
@@ -1941,6 +1947,16 @@ QString Application::getMSAClientID()
     }
 
     return BuildConfig.MSA_CLIENT_ID;
+}
+
+QString Application::getElyClientID()
+{
+    QString clientIDOverride = m_settings->get("ElyClientIDOverride").toString();
+    if (!clientIDOverride.isEmpty()) {
+        return clientIDOverride;
+    }
+
+    return BuildConfig.ELY_CLIENT_ID;
 }
 
 QString Application::getFlameAPIKey()

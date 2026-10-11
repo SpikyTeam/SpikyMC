@@ -1,9 +1,10 @@
 #pragma once
 #include <QObject>
+#include <QUrl>
 
 #include "minecraft/auth/AuthStep.h"
-#include "net/Request.h"
 #include "net/NetJob.h"
+#include "net/Request.h"
 
 class MinecraftProfileStep : public AuthStep {
     Q_OBJECT
@@ -15,6 +16,9 @@ class MinecraftProfileStep : public AuthStep {
     void perform() override;
 
     QString describe() override;
+
+   protected:
+    QUrl m_profileUrl = QUrl("https://api.minecraftservices.com/minecraft/profile");
 
    private slots:
     void onRequestDone(QByteArray* response);

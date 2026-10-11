@@ -23,6 +23,8 @@ struct AuthSession {
     QString uuid;
     // 'msa' or 'offline', depending on account type
     QString user_type;
+    // whether we need to patch authlib for a third-party login (Ely.by)
+    bool wantsElyPatch = false;
     // the actual launch mode for this session
     LaunchMode launchMode;
 };

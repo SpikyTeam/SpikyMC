@@ -83,7 +83,7 @@ class MinecraftAccount : public QObject, public Usable {
     //! Default constructor
     explicit MinecraftAccount(QObject* parent = 0);
 
-    static MinecraftAccountPtr createBlankMSA();
+    static MinecraftAccountPtr createBlank(AccountType type);
 
     static MinecraftAccountPtr createOffline(const QString& username);
 
@@ -100,6 +100,8 @@ class MinecraftAccount : public QObject, public Usable {
     shared_qobject_ptr<AuthFlow> refresh();
 
     shared_qobject_ptr<AuthFlow> currentTask();
+
+    void clearCurrentTask();
 
    public: /* queries */
     QString internalId() const { return data.internalId; }
@@ -128,6 +130,9 @@ class MinecraftAccount : public QObject, public Usable {
             case AccountType::MSA: {
                 return "msa";
             } break;
+            case AccountType::Ely: {
+                return "msa"; // required for chat signing
+            } break;
             case AccountType::Offline: {
                 return "offline";
             } break;
@@ -135,6 +140,23 @@ class MinecraftAccount : public QObject, public Usable {
                 return "unknown";
             }
         }
+    }
+
+    QString nameWithType() const
+    {
+        const auto typeFriendlyString = [](const AccountType type) {
+            switch (type) {
+                case AccountType::MSA:
+                    return QStringLiteral("MSA");
+                case AccountType::Ely:
+                    return QStringLiteral("Ely.by");
+                case AccountType::Offline:
+                    return QStringLiteral("Offline");
+            }
+            Q_ASSERT_X(false, "MinecraftAccount::nameWithType", "No type friendly string mapping for current account type");
+            return QString();
+        };
+        return QString("%1 [%2]").arg(profileName(), typeFriendlyString(data.type));
     }
 
     QPixmap getFace(int width = 64, int height = 64) const;
@@ -146,7 +168,7 @@ class MinecraftAccount : public QObject, public Usable {
 
     bool shouldRefresh() const;
 
-    void fillSession(AuthSessionPtr session);
+    void fillSession(AuthSessionPtr session, int elyPatchPreference);
 
     QString lastError() const { return data.lastError(); }
 

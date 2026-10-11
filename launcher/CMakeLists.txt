@@ -215,10 +215,18 @@ set(MINECRAFT_SOURCES
     minecraft/auth/steps/LauncherLoginStep.h
     minecraft/auth/steps/MinecraftProfileStep.cpp
     minecraft/auth/steps/MinecraftProfileStep.h
+    minecraft/auth/steps/MinecraftProfileStepEly.cpp
+    minecraft/auth/steps/MinecraftProfileStepEly.h
     minecraft/auth/steps/MSADeviceCodeStep.cpp
     minecraft/auth/steps/MSADeviceCodeStep.h
+    minecraft/auth/steps/ElyDeviceCodeStep.cpp
+    minecraft/auth/steps/ElyDeviceCodeStep.h
     minecraft/auth/steps/MSAStep.cpp
     minecraft/auth/steps/MSAStep.h
+    minecraft/auth/steps/ElyStep.cpp
+    minecraft/auth/steps/ElyStep.h
+    minecraft/auth/steps/ElyYggdrasilTokenStep.cpp
+    minecraft/auth/steps/ElyYggdrasilTokenStep.h
     minecraft/auth/steps/XboxAuthorizationStep.cpp
     minecraft/auth/steps/XboxAuthorizationStep.h
     minecraft/auth/steps/XboxUserStep.cpp
@@ -232,6 +240,8 @@ set(MINECRAFT_SOURCES
     minecraft/update/FoldersTask.h
     minecraft/update/LibrariesTask.cpp
     minecraft/update/LibrariesTask.h
+    minecraft/update/ElyPatchTask.cpp
+    minecraft/update/ElyPatchTask.h
 
     minecraft/launch/ClaimAccount.cpp
     minecraft/launch/ClaimAccount.h
@@ -1035,6 +1045,8 @@ SET(LAUNCHER_SOURCES
     ui/dialogs/ImportResourceDialog.h
     ui/dialogs/MSALoginDialog.cpp
     ui/dialogs/MSALoginDialog.h
+    ui/dialogs/ElyLoginDialog.cpp
+    ui/dialogs/ElyLoginDialog.h
     ui/dialogs/NetworkJobFailedDialog.cpp
     ui/dialogs/NetworkJobFailedDialog.h
     ui/dialogs/NewComponentDialog.cpp

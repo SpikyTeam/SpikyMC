@@ -40,6 +40,7 @@ class VersionList : public BaseVersionList, public BaseEntity {
     bool isLoaded() override;
     Task::Ptr getLoadTask(bool forceReload = false) override;
     const BaseVersion::Ptr at(int i) const override;
+    Version::Ptr concreteAt(int i) const { return m_versions.at(i); }
     int count() const override;
     void sortVersions() override;
 

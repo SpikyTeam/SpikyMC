@@ -67,10 +67,10 @@ MinecraftAccountPtr MinecraftAccount::loadFromJsonV3(const QJsonObject& json)
     return nullptr;
 }
 
-MinecraftAccountPtr MinecraftAccount::createBlankMSA()
+MinecraftAccountPtr MinecraftAccount::createBlank(const AccountType type)
 {
     MinecraftAccountPtr account(new MinecraftAccount());
-    account->data.type = AccountType::MSA;
+    account->data.type = type;
     return account;
 }
 
@@ -145,6 +145,16 @@ shared_qobject_ptr<AuthFlow> MinecraftAccount::currentTask()
     return m_currentTask;
 }
 
+void MinecraftAccount::clearCurrentTask()
+{
+    if (m_currentTask.isNull()) {
+        return;
+    }
+    m_currentTask.reset();
+    emit changed();
+    emit activityChanged(false);
+}
+
 void MinecraftAccount::authSucceeded()
 {
     m_currentTask.reset();
@@ -194,9 +204,9 @@ void MinecraftAccount::authFailed(QString reason)
 QString MinecraftAccount::displayName() const
 {
     if (const QList validStates{ AccountState::Unchecked, AccountState::Working, AccountState::Offline, AccountState::Online }; !validStates.contains(accountState())) {
-        return QString("⚠ %1").arg(profileName());
+        return QString("⚠ %1").arg(nameWithType());
     }
-    return profileName();
+    return nameWithType();
 }
 
 bool MinecraftAccount::isActive() const
@@ -239,7 +249,7 @@ bool MinecraftAccount::shouldRefresh() const
     return false;
 }
 
-void MinecraftAccount::fillSession(AuthSessionPtr session)
+void MinecraftAccount::fillSession(AuthSessionPtr session, int elyPatchPreference)
 {
     // volatile auth token
     session->access_token = data.accessToken();
@@ -255,6 +265,20 @@ void MinecraftAccount::fillSession(AuthSessionPtr session)
         session->session = "token:" + data.accessToken() + ":" + data.profileId();
     } else {
         session->session = "-";
+    }
+    switch (elyPatchPreference) {
+        case 0: { // Always
+            session->wantsElyPatch = true;
+        } break;
+        case 1: { // When using Ely and Offline accounts
+            session->wantsElyPatch = data.type == AccountType::Ely || data.type == AccountType::Offline;
+        } break;
+        case 2: { // When using Ely accounts
+            session->wantsElyPatch = data.type == AccountType::Ely;
+        } break;
+        default: { // Never/unknown
+            session->wantsElyPatch = false;
+        }
     }
 }
 

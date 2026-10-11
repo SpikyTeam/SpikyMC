@@ -184,7 +184,7 @@ set(Launcher_LEGACY_FMLLIBS_BASE_URL "https://mc.spiky.team/fmllibs/" CACHE STRI
 
 ######## Set version numbers ########
 set(Launcher_VERSION_MAJOR 1)
-set(Launcher_VERSION_MINOR 0)
+set(Launcher_VERSION_MINOR 1)
 set(Launcher_VERSION_PATCH 0)
 
 set(Launcher_VERSION_NAME "${Launcher_VERSION_MAJOR}.${Launcher_VERSION_MINOR}.${Launcher_VERSION_PATCH}")
@@ -266,6 +266,10 @@ endif()
 # Microsoft Azure application registration for SpikyMC OAuth login
 # Application (client) ID: 5c8bed5d-9d21-4b2a-a9d9-afda36985868
 set(Launcher_MSA_CLIENT_ID "5c8bed5d-9d21-4b2a-a9d9-afda36985868" CACHE STRING "Client ID you can get from Microsoft Identity Platform when you register an application")
+
+# https://account.ely.by/rules
+# Ely.by application registration for SpikyMC OAuth login
+set(Launcher_ELY_CLIENT_ID "spikymc4" CACHE STRING "Client ID you can get from Ely.by Accounts for developers when you register an application")
 
 # By using this key in your builds you accept the terms and conditions laid down in
 # https://support.curseforge.com/en/support/solutions/articles/9000207405-curse-forge-3rd-party-api-terms-and-conditions

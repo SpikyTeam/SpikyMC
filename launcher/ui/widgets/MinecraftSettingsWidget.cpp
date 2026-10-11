@@ -76,6 +76,7 @@ MinecraftSettingsWidget::MinecraftSettingsWidget(MinecraftInstance* instance, QW
             tr("<span style=\" font-weight:600; color:#f5c211;\">Warning</span><span style=\" color:#f5c211;\">: The maximized option is "
                "not fully supported on this Minecraft version.</span>"));
 
+        m_ui->elyGroupBox->setCheckable(true);
         m_ui->consoleSettingsBox->setCheckable(true);
         m_ui->windowSizeGroupBox->setCheckable(true);
         m_ui->nativeWorkaroundsGroupBox->setCheckable(true);
@@ -170,6 +171,10 @@ void MinecraftSettingsWidget::loadSettings()
     } else {
         settings = APPLICATION->settings();
     }
+
+    // Ely.by patch
+    m_ui->elyGroupBox->setChecked(m_instance == nullptr || settings->get("OverrideElySettings").toBool());
+    m_ui->applyElyPatch->setCurrentIndex(settings->get("ElyPatchPreference").toInt());
 
     // Game Window
     m_ui->windowSizeGroupBox->setChecked(m_instance == nullptr || settings->get("OverrideWindow").toBool() ||
@@ -338,6 +343,18 @@ void MinecraftSettingsWidget::saveSettings()
         settings = m_instance->settings();
     } else {
         settings = APPLICATION->settings();
+    }
+
+    // Ely.by patch
+    bool ely = m_instance == nullptr || m_ui->elyGroupBox->isChecked();
+
+    if (m_instance != nullptr)
+        settings->set("OverrideElySettings", ely);
+
+    if (ely) {
+        settings->set("ElyPatchPreference", m_ui->applyElyPatch->currentIndex());
+    } else {
+        settings->reset("ElyPatchPreference");
     }
 
     // Console

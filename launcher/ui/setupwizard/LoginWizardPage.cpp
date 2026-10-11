@@ -1,6 +1,7 @@
 #include "LoginWizardPage.h"
 #include "minecraft/auth/AccountList.h"
 #include "ui/dialogs/ChooseOfflineNameDialog.h"
+#include "ui/dialogs/ElyLoginDialog.h"
 #include "ui/dialogs/MSALoginDialog.h"
 #include "ui_LoginWizardPage.h"
 
@@ -42,10 +43,18 @@ void LoginWizardPage::storeAccount(const MinecraftAccountPtr& account)
     }
 }
 
-void LoginWizardPage::on_pushButton_clicked()
+void LoginWizardPage::on_msaButton_clicked()
 {
     wizard()->hide();
     auto account = MSALoginDialog::newAccount(nullptr);
+    wizard()->show();
+    storeAccount(account);
+}
+
+void LoginWizardPage::on_elyButton_clicked()
+{
+    wizard()->hide();
+    auto account = ElyLoginDialog::newAccount(nullptr);
     wizard()->show();
     storeAccount(account);
 }

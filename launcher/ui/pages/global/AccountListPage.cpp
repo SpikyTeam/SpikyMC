@@ -46,6 +46,7 @@
 
 #include "ui/dialogs/ChooseOfflineNameDialog.h"
 #include "ui/dialogs/CustomMessageBox.h"
+#include "ui/dialogs/ElyLoginDialog.h"
 #include "ui/dialogs/MSALoginDialog.h"
 
 #include "Application.h"
@@ -130,6 +131,17 @@ void AccountListPage::listChanged()
 void AccountListPage::on_actionAddMicrosoft_triggered()
 {
     auto account = MSALoginDialog::newAccount(this);
+    if (account) {
+        m_accounts->addAccount(account);
+        if (m_accounts->count() == 1) {
+            m_accounts->setDefaultAccount(account);
+        }
+    }
+}
+
+void AccountListPage::on_actionAddEly_triggered()
+{
+    auto account = ElyLoginDialog::newAccount(this);
     if (account) {
         m_accounts->addAccount(account);
         if (m_accounts->count() == 1) {

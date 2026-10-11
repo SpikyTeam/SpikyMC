@@ -70,6 +70,7 @@
 #include "minecraft/launch/VerifyJavaInstall.h"
 
 #include "minecraft/update/AssetUpdateTask.h"
+#include "minecraft/update/ElyPatchTask.h"
 #include "minecraft/update/FoldersTask.h"
 #include "minecraft/update/LegacyFMLLibrariesTask.h"
 #include "minecraft/update/LibrariesTask.h"
@@ -241,6 +242,10 @@ void MinecraftInstance::loadSpecificSettings()
         // Legacy-related options
         auto legacySettings = m_settings->registerSetting("OverrideLegacySettings", false);
         m_settings->registerOverride(global_settings->getSetting("OnlineFixes"), legacySettings);
+
+        // Ely-related options
+        auto elySettings = m_settings->registerSetting("OverrideElySettings", false);
+        m_settings->registerOverride(global_settings->getSetting("ElyPatchPreference"), elySettings);
 
         auto envSetting = m_settings->registerSetting("OverrideEnv", false);
         m_settings->registerOverride(global_settings->getSetting("Env"), envSetting);
@@ -1199,8 +1204,8 @@ LaunchTask* MinecraftInstance::createLaunchTask(AuthSessionPtr session, Minecraf
     }
 
     // load meta
+    auto mode = session->launchMode != LaunchMode::Offline ? Net::Mode::Online : Net::Mode::Offline;
     {
-        auto mode = session->launchMode != LaunchMode::Offline ? Net::Mode::Online : Net::Mode::Offline;
         process->appendStep(makeShared<TaskStepWrapper>(pptr, makeShared<MinecraftLoadAndCheck>(this, mode)));
     }
 
@@ -1217,6 +1222,11 @@ LaunchTask* MinecraftInstance::createLaunchTask(AuthSessionPtr session, Minecraf
         auto step = makeShared<LaunchCommand>(pptr, getPreLaunchCommand(), tr("Pre-Launch"));
         step->setWorkingDirectory(gameRoot());
         process->appendStep(step);
+    }
+
+    // prepare Ely patch
+    if (session->wantsElyPatch) {
+        process->appendStep(makeShared<TaskStepWrapper>(pptr, makeShared<ElyPatchTask>(this, m_runtimeContext, mode)));
     }
 
     // if we aren't in offline mode

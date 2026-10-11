@@ -80,7 +80,7 @@ MSALoginDialog::MSALoginDialog(QWidget* parent) : QDialog(parent), ui(new Ui::MS
 int MSALoginDialog::exec()
 {
     // Setup the login task and start it
-    m_account = MinecraftAccount::createBlankMSA();
+    m_account = MinecraftAccount::createBlank(m_accountType);
     m_authflow_task = m_account->login(false);
     connect(m_authflow_task.get(), &Task::failed, this, &MSALoginDialog::onAuthFlowTaskFailed);
     connect(m_authflow_task.get(), &Task::succeeded, this, &QDialog::accept);
@@ -92,7 +92,10 @@ int MSALoginDialog::exec()
 
     m_devicecode_task.reset(new AuthFlow(m_account->accountData(), AuthFlow::Action::DeviceCode));
     connect(m_devicecode_task.get(), &Task::failed, this, &MSALoginDialog::onDeviceCodeTaskFailed);
-    connect(m_devicecode_task.get(), &Task::succeeded, this, &QDialog::accept);
+    connect(m_devicecode_task.get(), &Task::succeeded, this, [this] {
+        m_account->clearCurrentTask();
+        accept();
+    });
     connect(m_devicecode_task.get(), &Task::aborted, this, &MSALoginDialog::reject);
     connect(m_devicecode_task.get(), &Task::status, this, &MSALoginDialog::onDeviceFlowStatus);
     connect(m_devicecode_task.get(), &AuthFlow::authorizeWithBrowser, this, &MSALoginDialog::authorizeWithBrowser);
@@ -149,7 +152,7 @@ void MSALoginDialog::onDeviceCodeTaskFailed(QString reason)
     ui->status->setText(processed);
     ui->loadingLabel->setText(m_devicecode_task->getStatus());
     disconnect(ui->buttonBox->button(QDialogButtonBox::Cancel), &QPushButton::clicked, m_devicecode_task.get(), &Task::abort);
-    if (m_authflow_task->getState() == Task::State::Failed) {
+    if (m_authflow_task && m_authflow_task->getState() == Task::State::Failed) {
         disconnect(ui->buttonBox->button(QDialogButtonBox::Cancel), &QPushButton::clicked, m_authflow_task.get(), &Task::abort);
         connect(ui->buttonBox->button(QDialogButtonBox::Cancel), &QPushButton::clicked, this, &MSALoginDialog::reject, Qt::UniqueConnection);
     }
@@ -205,7 +208,7 @@ void MSALoginDialog::authorizeWithBrowserWithExtra(QString url, QString code, [[
     this->adjustSize();
 
     const auto linkString = QString("<a href=\"%1\">%2</a>").arg(url, url);
-    if (url == "https://www.microsoft.com/link" && !code.isEmpty()) {
+    if (url == m_linkUrl && !code.isEmpty()) {
         url += QString("?otc=%1").arg(code);
     }
     ui->code->setText(code);

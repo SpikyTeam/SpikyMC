@@ -141,6 +141,8 @@ void APIPage::loadSettings()
 
     QString msaClientID = s->get("MSAClientIDOverride").toString();
     ui->msaClientID->setText(msaClientID);
+    QString elyClientID = s->get("ElyClientIDOverride").toString();
+    ui->elyClientID->setText(elyClientID);
     QString metaURL = s->get("MetaURLOverride").toString();
     ui->metaURL->setText(metaURL);
     ui->metaRefreshOnLaunchCB->setCheckState(s->get("MetaRefreshOnLaunch").toBool() ? Qt::Checked : Qt::Unchecked);
@@ -166,6 +168,8 @@ void APIPage::applySettings()
 
     QString msaClientID = ui->msaClientID->text();
     s->set("MSAClientIDOverride", msaClientID);
+    QString elyClientID = ui->elyClientID->text();
+    s->set("ElyClientIDOverride", elyClientID);
     QUrl metaURL(ui->metaURL->text());
     QUrl resourceURL(ui->resourceURL->text());
     QUrl fmlLibsURL(ui->legacyFMLLibsURL->text());

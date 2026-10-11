@@ -344,6 +344,9 @@ QVariant AccountList::data(const QModelIndex& index, int role) const
                         case AccountType::MSA: {
                             return tr("MSA", "Account type");
                         }
+                        case AccountType::Ely: {
+                            return tr("Ely.by", "Account type");
+                        }
                         case AccountType::Offline: {
                             return tr("Offline", "Account type");
                         }
@@ -590,6 +593,11 @@ bool AccountList::anyAccountIsValid()
         }
     }
     return false;
+}
+
+bool AccountList::isEmpty() const
+{
+    return m_accounts.isEmpty();
 }
 
 void AccountList::fillQueue()
