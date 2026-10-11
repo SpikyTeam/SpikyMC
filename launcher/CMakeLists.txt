@@ -1153,30 +1153,12 @@ SET(LAUNCHER_SOURCES
     ui/instanceview/VisualGroup.h
 )
 
-if (APPLE)
-    set(LAUNCHER_SOURCES
-        ${LAUNCHER_SOURCES}
-        ui/themes/ThemeManager.mm
-    )
-endif()
-
-if (NOT Apple)
-    set(LAUNCHER_SOURCES
+set(LAUNCHER_SOURCES
     ${LAUNCHER_SOURCES}
 
     ui/dialogs/UpdateAvailableDialog.h
     ui/dialogs/UpdateAvailableDialog.cpp
 )
-endif()
-
-if (APPLE)
-    set(LAUNCHER_SOURCES
-        ${LAUNCHER_SOURCES}
-
-        macsandbox/SecurityBookmarkFileAccess.h
-        macsandbox/SecurityBookmarkFileAccess.mm
-    )
-endif()
 
 if(WIN32)
     set(LAUNCHER_SOURCES
@@ -1437,7 +1419,7 @@ endif()
 #### The bundle mess! ####
 # Bundle utilities are used to complete packages for different platforms - they add all the libraries that would otherwise be missing on the target system.
 # NOTE: it seems that this absolutely has to be here, and nowhere else.
-if(WIN32 OR (UNIX AND APPLE))
+if(WIN32)
     if(WIN32)
         set(QT_DEPLOY_TOOL_OPTIONS "--no-opengl-sw --no-quick-import --no-system-d3d-compiler --no-system-dxc-compiler --skip-plugin-types generic,networkinformation")
     endif()

@@ -25,11 +25,17 @@ Debug
 compile_commands.json
 
 # Build dirs
-build
-/build-*
+build/
+/build-*/
+
+# vcpkg build artifacts
+/vcpkg_installed/
+
+# Qt Creator / Qt temporary files
+/.qt/
 
 # Local packaged builds / downloaded CI artifacts
-/dist
+/dist/
 
 # Install dirs
 install
