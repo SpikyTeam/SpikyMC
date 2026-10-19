@@ -12,12 +12,11 @@
 </p>
 
 > [!NOTE]
-> SpikyMC is an independent project. "SpikyMC", its logo and branding are the property of their respective owners and are used here only for informational purposes to indicate the origin of the code.
+> SpikyMC is an independent project. "Prism Launcher", its logo and branding are the property of their respective owners and are used here only for informational purposes to indicate the origin of the code.
 
 ## Installation
 
 - All downloads and installation instructions for SpikyMC can be found in the [Releases](https://github.com/SpikyTeam/SpikyMC/releases).
-- The last build status can be found in the [GitHub Actions](https://github.com/SpikyTeam/SpikyMC/actions) tab (this also includes the pull request status).
 
 ### Development Builds
 
