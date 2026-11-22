@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 flowln <flowlnlnln@gmail.com>
+﻿// SPDX-FileCopyrightText: 2023 flowln <flowlnlnln@gmail.com>
 //
 // SPDX-License-Identifier: GPL-3.0-only AND Apache-2.0
 /*
@@ -56,7 +56,6 @@ ResourceDownload::ResourceDescriptor prepareModDescriptor()
     urlHandlers.insert(QRegularExpression::anchoredPattern(R"((?:www\.)?curseforge\.com\/minecraft\/mc-mods\/([^\/]+)\/?)"), "curseforge");
     urlHandlers.insert(QRegularExpression::anchoredPattern(R"(minecraft\.curseforge\.com\/projects\/([^\/]+)\/?)"), "curseforge");
     return {
-        .helpPage = "Mod-platform",
         //: The singular version of 'mods'
         .resourceString = QObject::tr("mod"),
         //: The plural version of 'mod'

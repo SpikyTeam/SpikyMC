@@ -77,6 +77,9 @@ class MinecraftInstance : public BaseInstance {
     QString texturePacksDir() const;
     QString shaderPacksDir() const;
     QString modsRoot() const override;
+    bool isHorizon() const;
+    QString horizonBuildDir() const;
+    QString horizonResourcesDir() const;
     QString coreModsDir() const;
     QString nilModsDir() const;
     QString dataPacksDir();

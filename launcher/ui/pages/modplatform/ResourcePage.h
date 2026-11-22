@@ -34,7 +34,6 @@ struct ResourceProviderData {
 };
 
 struct ResourceDescriptor {
-    QString helpPage;
     QString resourceString = QObject::tr("resource");
     QString resourcesString = QObject::tr("resources");
 
@@ -53,7 +52,6 @@ class ResourcePage : public QWidget, public BasePage {
     auto displayName() const -> QString override { return m_provider.displayName; };
     auto icon() const -> QIcon override { return m_provider.icon; };
     auto id() const -> QString override { return m_provider.id; };
-    auto helpPage() const -> QString override { return m_desc.helpPage; };
     bool shouldDisplay() const override { return true; };
 
     /* Used internally */

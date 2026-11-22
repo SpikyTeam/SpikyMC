@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-3.0-only
+﻿// SPDX-License-Identifier: GPL-3.0-only
 /*
  *  SpikyMC - Minecraft Launcher
  *  Copyright (c) 2022 Jamie Mansfield <jmansfield@cadixdev.org>
@@ -56,7 +56,6 @@ class ProxyPage : public QWidget, public BasePage {
     QString displayName() const override { return tr("Proxy"); }
     QIcon icon() const override { return QIcon::fromTheme("proxy"); }
     QString id() const override { return "proxy-settings"; }
-    QString helpPage() const override { return "Proxy-settings"; }
     bool apply() override;
     void retranslate() override;
 

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-3.0-only
+﻿// SPDX-License-Identifier: GPL-3.0-only
 /*
  *  SpikyMC - Minecraft Launcher
  *  Copyright (C) 2022 Sefa Eyeoglu <contact@scrumplex.net>
@@ -65,7 +65,6 @@ class AccountListPage : public QMainWindow, public BasePage {
         return icon;
     }
     QString id() const override { return "accounts"; }
-    QString helpPage() const override { return "getting-started/adding-an-account"; }
     void retranslate() override;
 
    public slots:

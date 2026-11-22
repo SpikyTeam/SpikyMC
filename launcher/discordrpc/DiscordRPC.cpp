@@ -275,6 +275,7 @@ void DiscordRPC::onReadyRead()
                     m_currentPipe = 0;
                     qDebug() << "DiscordRPC: READY";
                     sendActivity();
+                    m_heartbeatTimer->setInterval(15000);
                     m_heartbeatTimer->start();
                 }
             }
@@ -290,6 +291,8 @@ void DiscordRPC::onHeartbeat()
         sendActivity();
     } else {
         // Discord may have started (or the pipe may have opened) while we were idle.
+        // Poll slowly while disconnected: each round tries every pipe.
+        m_heartbeatTimer->setInterval(60000);
         m_connectionAttempts = 0;
         connectToNetwork();
     }

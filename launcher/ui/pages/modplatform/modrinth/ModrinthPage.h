@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-3.0-only
+﻿// SPDX-License-Identifier: GPL-3.0-only
 /*
  *  SpikyMC - Minecraft Launcher
  *  Copyright (c) 2022 flowln <flowlnlnln@gmail.com>
@@ -64,7 +64,6 @@ class ModrinthPage : public QWidget, public ModpackProviderBasePage {
     QString displayName() const override { return tr("Modrinth"); }
     QIcon icon() const override { return QIcon::fromTheme("modrinth"); }
     QString id() const override { return "modrinth"; }
-    QString helpPage() const override { return "Modrinth-platform"; }
 
     static QString debugName() { return "Modrinth"; }
     static QString metaEntryBase() { return "ModrinthModpacks"; };

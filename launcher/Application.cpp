@@ -1724,6 +1724,8 @@ MainWindow* Application::showMainWindow(bool minimized)
         m_mainWindow = new MainWindow();
         m_mainWindow->restoreState(QByteArray::fromBase64(APPLICATION->settings()->get("MainWindowState").toString().toUtf8()));
         m_mainWindow->restoreGeometry(QByteArray::fromBase64(APPLICATION->settings()->get("MainWindowGeometry").toString().toUtf8()));
+        // Saved geometry can contain a fullscreen flag; let the compositor place/tile the window instead.
+        m_mainWindow->setWindowState(m_mainWindow->windowState() & ~Qt::WindowFullScreen);
 
         if (minimized) {
             m_mainWindow->showMinimized();

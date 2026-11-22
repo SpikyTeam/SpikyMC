@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 flowln <flowlnlnln@gmail.com>
+﻿// SPDX-FileCopyrightText: 2023 flowln <flowlnlnln@gmail.com>
 //
 // SPDX-License-Identifier: GPL-3.0-only
 
@@ -22,7 +22,6 @@ ResourceDownload::ResourceDescriptor prepareResourcePackDescriptor()
                        "curseforge");
     urlHandlers.insert(QRegularExpression::anchoredPattern(R"(minecraft\.curseforge\.com\/projects\/([^\/]+)\/?)"), "curseforge");
     return {
-        .helpPage = {},
         //: The singular version of 'resource packs'
         .resourceString = QObject::tr("resource pack"),
         //: The plural version of 'resource pack'

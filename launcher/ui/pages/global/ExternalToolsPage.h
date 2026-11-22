@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-3.0-only
+﻿// SPDX-License-Identifier: GPL-3.0-only
 /*
  *  SpikyMC - Minecraft Launcher
  *  Copyright (c) 2022 Jamie Mansfield <jmansfield@cadixdev.org>
@@ -62,7 +62,6 @@ class ExternalToolsPage : public QWidget, public BasePage {
         return icon;
     }
     QString id() const override { return "external-tools"; }
-    QString helpPage() const override { return "Tools"; }
     bool apply() override;
     void retranslate() override;
 

@@ -40,8 +40,11 @@
 #include <QModelIndex>
 #include <QWidget>
 
+#include <memory>
+
 #include "ui/pages/BasePageContainer.h"
 #include "ui/pages/BasePageProvider.h"
+#include "ui/widgets/SettingsSearch.h"
 
 class QLayout;
 class IconLabel;
@@ -50,6 +53,7 @@ class PageModel;
 class QLabel;
 class QListView;
 class QLineEdit;
+class QListWidget;
 class QStackedLayout;
 class QGridLayout;
 
@@ -63,6 +67,9 @@ class PageContainer : public QWidget, public BasePageContainer {
     void addButtons(QLayout* buttons);
 
     void useSidebarStyle(bool sidebar);
+
+    /// Adds the settings search box (dialog-sized containers only).
+    void setSearchEnabled(bool enabled);
 
     /*
      * Save any unsaved state and prepare to be closed.
@@ -89,6 +96,7 @@ class PageContainer : public QWidget, public BasePageContainer {
     virtual void setParentContainer(BasePageContainer* container) { m_container = container; };
 
     void changeEvent(QEvent*) override;
+    bool eventFilter(QObject* watched, QEvent* event) override;
 
     void hidePageList() { m_pageList->hide(); }
 
@@ -97,7 +105,6 @@ class PageContainer : public QWidget, public BasePageContainer {
     void retranslate();
 
    public slots:
-    void help();
 
    signals:
     /** Emitted when the currently selected page is changed */
@@ -106,6 +113,13 @@ class PageContainer : public QWidget, public BasePageContainer {
    private slots:
     void currentChanged(const QModelIndex& current);
     void showPage(int row);
+    void applySearch(const QString& text);
+    void activateSearchResult(int row);
+
+   private:
+    void rebuildSearchIndex();
+    void revealResult(QWidget* target);
+    void revealResultNow(QWidget* target);
 
    private:
     BasePageContainer* m_container = nullptr;
@@ -116,4 +130,10 @@ class PageContainer : public QWidget, public BasePageContainer {
     QListView* m_pageList;
     QLabel* m_header;
     QGridLayout* m_layout;
+
+    bool m_searchEnabled = false;
+    std::unique_ptr<SettingsSearch> m_search;
+    QLineEdit* m_searchEdit = nullptr;
+    QListWidget* m_searchResults = nullptr;
+    QList<SettingsSearch::Entry> m_currentResults;
 };

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-3.0-only
+﻿// SPDX-License-Identifier: GPL-3.0-only
 /*
  *  SpikyMC - Minecraft Launcher
  *  Copyright (c) 2022 Jamie Mansfield <jmansfield@cadixdev.org>
@@ -62,7 +62,6 @@ class FlamePage : public QWidget, public ModpackProviderBasePage {
     QString displayName() const override { return "CurseForge"; }
     QIcon icon() const override { return QIcon::fromTheme("flame"); }
     QString id() const override { return "flame"; }
-    QString helpPage() const override { return "Flame-platform"; }
     bool shouldDisplay() const override;
     void retranslate() override;
 

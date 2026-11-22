@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-3.0-only
+﻿// SPDX-License-Identifier: GPL-3.0-only
 /*
  *  SpikyMC - Minecraft Launcher
  *  Copyright (C) 2022 Sefa Eyeoglu <contact@scrumplex.net>
@@ -117,8 +117,6 @@ Config::Config()
         GIT_TAG = versionString();
     }
 
-    WIKI_URL = "@Launcher_WIKI_URL@";
-    HELP_URL = "@Launcher_HELP_URL@";
     LOGIN_CALLBACK_URL = "@Launcher_LOGIN_CALLBACK_URL@";
     MSA_CLIENT_ID = "@Launcher_MSA_CLIENT_ID@";
     ELY_CLIENT_ID = "@Launcher_ELY_CLIENT_ID@";
@@ -130,10 +128,7 @@ Config::Config()
     OPENAL_LIBRARY_NAME = "@Launcher_OPENAL_LIBRARY_NAME@";
     SDL_LIBRARY_NAME = "@Launcher_SDL_LIBRARY_NAME@";
 
-    BUG_TRACKER_URL = "@Launcher_BUG_TRACKER_URL@";
     TRANSLATION_FILES_URL = "@Launcher_TRANSLATION_FILES_URL@";
-    MATRIX_URL = "@Launcher_MATRIX_URL@";
-    SUBREDDIT_URL = "@Launcher_SUBREDDIT_URL@";
 }
 
 QString Config::versionString() const

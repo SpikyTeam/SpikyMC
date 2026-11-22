@@ -255,6 +255,10 @@ set(MINECRAFT_SOURCES
     minecraft/launch/ModMinecraftJar.h
     minecraft/launch/ExtractNatives.cpp
     minecraft/launch/ExtractNatives.h
+    minecraft/launch/HorizonClientLaunch.cpp
+    minecraft/launch/HorizonClientLaunch.h
+    minecraft/launch/HorizonPrepare.cpp
+    minecraft/launch/HorizonPrepare.h
     minecraft/launch/LauncherPartLaunch.cpp
     minecraft/launch/LauncherPartLaunch.h
     minecraft/launch/MinecraftTarget.cpp
@@ -271,6 +275,12 @@ set(MINECRAFT_SOURCES
     minecraft/launch/AutoInstallJava.h
 
     minecraft/GradleSpecifier.h
+    minecraft/Horizon.cpp
+    minecraft/Horizon.h
+    minecraft/HorizonCreationTask.cpp
+    minecraft/HorizonCreationTask.h
+    minecraft/HorizonVersion.cpp
+    minecraft/HorizonVersion.h
     minecraft/MinecraftInstance.cpp
     minecraft/MinecraftInstance.h
     minecraft/LaunchProfile.cpp
@@ -937,6 +947,10 @@ SET(LAUNCHER_SOURCES
     ui/pages/modplatform/CustomPage.cpp
     ui/pages/modplatform/CustomPage.h
 
+    ui/pages/modplatform/HorizonPage.cpp
+    ui/pages/modplatform/HorizonPage.h
+    ui/pages/modplatform/HorizonPage.ui
+
     ui/pages/modplatform/ResourcePage.cpp
     ui/pages/modplatform/ResourcePage.h
     ui/pages/modplatform/ResourceModel.cpp
@@ -1021,8 +1035,6 @@ SET(LAUNCHER_SOURCES
     ui/pages/modplatform/modrinth/ModrinthResourcePages.h
 
     # GUI - dialogs
-    ui/dialogs/AboutDialog.cpp
-    ui/dialogs/AboutDialog.h
     ui/dialogs/ProfileSelectDialog.cpp
     ui/dialogs/ProfileSelectDialog.h
     ui/dialogs/ProfileSetupDialog.cpp
@@ -1116,6 +1128,8 @@ SET(LAUNCHER_SOURCES
     ui/widgets/PageContainer.cpp
     ui/widgets/PageContainer.h
     ui/widgets/PageContainer_p.h
+    ui/widgets/SettingsSearch.cpp
+    ui/widgets/SettingsSearch.h
     ui/widgets/ProjectDescriptionPage.h
     ui/widgets/ProjectDescriptionPage.cpp
     ui/widgets/VariableSizedImageObject.h
@@ -1173,6 +1187,7 @@ qt_add_resources(LAUNCHER_RESOURCES
     resources/spikymc/spikymc_icons.qrc
     resources/documents/documents.qrc
     resources/shaders/shaders.qrc
+    resources/settingsui/settingsui.qrc
     "${CMAKE_CURRENT_BINARY_DIR}/../${Launcher_Branding_LogoQRC}"
 )
 

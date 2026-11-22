@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-3.0-only
+﻿// SPDX-License-Identifier: GPL-3.0-only
 /*
  *  PolyMC - Minecraft Launcher
  *  Copyright (c) 2022 Jamie Mansfield <jmansfield@cadixdev.org>
@@ -60,7 +60,6 @@ class FtbPage : public QWidget, public ModpackProviderBasePage {
     virtual QString displayName() const override { return "FTB"; }
     virtual QIcon icon() const override { return QIcon::fromTheme("ftb_logo"); }
     virtual QString id() const override { return "ftb"; }
-    virtual QString helpPage() const override { return "FTB-platform"; }
     virtual bool shouldDisplay() const override;
     void retranslate() override;
 

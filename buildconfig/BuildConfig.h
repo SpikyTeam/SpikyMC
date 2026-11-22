@@ -116,16 +116,6 @@ class Config {
     QString GIT_REFSPEC;
 
     /**
-     * URL that gets opened when the user clicks 'Launcher Help'
-     */
-    QString WIKI_URL;
-
-    /**
-     * URL (with arg %1 to be substituted with page-id) that gets opened when the user requests help in a dialog window
-     */
-    QString HELP_URL;
-
-    /**
      * URL that gets opened when the user succesfully logins.
      */
     QString LOGIN_CALLBACK_URL;
@@ -153,10 +143,6 @@ class Config {
     QString GLFW_LIBRARY_NAME;
     QString OPENAL_LIBRARY_NAME;
     QString SDL_LIBRARY_NAME;
-
-    QString BUG_TRACKER_URL;
-    QString MATRIX_URL;
-    QString SUBREDDIT_URL;
 
     QString DEFAULT_RESOURCE_BASE = "https://resources.download.minecraft.net/";
     QString LIBRARY_BASE = "https://libraries.minecraft.net/";

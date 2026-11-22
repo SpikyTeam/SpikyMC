@@ -93,7 +93,6 @@
 
 #include "ui/GuiUtil.h"
 #include "ui/ViewLogWindow.h"
-#include "ui/dialogs/AboutDialog.h"
 #include "ui/dialogs/CopyInstanceDialog.h"
 #include "ui/dialogs/CreateShortcutDialog.h"
 #include "ui/dialogs/CustomMessageBox.h"
@@ -180,17 +179,11 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
         ui->instanceToolBar->insertSeparator(ui->actionLaunchInstance);
     }
 
-    // set the menu for the folders help, accounts, and export tool buttons
+    // set the menu for the folders, accounts, and export tool buttons
     {
         auto foldersMenuButton = dynamic_cast<QToolButton*>(ui->mainToolBar->widgetForAction(ui->actionFoldersButton));
         ui->actionFoldersButton->setMenu(ui->foldersMenu);
         foldersMenuButton->setPopupMode(QToolButton::InstantPopup);
-
-        helpMenuButton = dynamic_cast<QToolButton*>(ui->mainToolBar->widgetForAction(ui->actionHelpButton));
-        ui->actionHelpButton->setMenu(new QMenu(this));
-        ui->actionHelpButton->menu()->addActions(ui->helpMenu->actions());
-        ui->actionHelpButton->menu()->removeAction(ui->actionCheckUpdate);
-        helpMenuButton->setPopupMode(QToolButton::InstantPopup);
 
         auto accountMenuButton = dynamic_cast<QToolButton*>(ui->mainToolBar->widgetForAction(ui->actionAccountsButton));
         accountMenuButton->setPopupMode(QToolButton::InstantPopup);
@@ -204,10 +197,6 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     // hide, disable and show stuff
     {
-        ui->actionReportBug->setVisible(!BuildConfig.BUG_TRACKER_URL.isEmpty());
-        ui->actionMATRIX->setVisible(!BuildConfig.MATRIX_URL.isEmpty());
-        ui->actionREDDIT->setVisible(!BuildConfig.SUBREDDIT_URL.isEmpty());
-
         ui->actionCheckUpdate->setVisible(APPLICATION->updaterEnabled());
 
 #ifndef Q_OS_MAC
@@ -423,9 +412,6 @@ void MainWindow::retranslateUi()
     renameButton->setToolTip(ui->actionRenameInstance->toolTip());
 
     // replace the %1 with the launcher display name in some actions
-    if (helpMenuButton->toolTip().contains("%1"))
-        helpMenuButton->setToolTip(helpMenuButton->toolTip().arg(BuildConfig.LAUNCHER_DISPLAYNAME));
-
     for (auto action : ui->helpMenu->actions()) {
         if (action->text().contains("%1"))
             action->setText(action->text().arg(BuildConfig.LAUNCHER_DISPLAYNAME));
@@ -1115,16 +1101,6 @@ void MainWindow::processURLs(QList<QUrl> urls)
     }
 }
 
-void MainWindow::on_actionREDDIT_triggered()
-{
-    DesktopServices::openUrl(QUrl(BuildConfig.SUBREDDIT_URL));
-}
-
-void MainWindow::on_actionMATRIX_triggered()
-{
-    DesktopServices::openUrl(QUrl(BuildConfig.MATRIX_URL));
-}
-
 void MainWindow::on_actionChangeInstIcon_triggered()
 {
     if (!m_selectedInstance)
@@ -1337,11 +1313,6 @@ void MainWindow::on_actionManageAccounts_triggered()
     APPLICATION->ShowGlobalSettings(this, "accounts");
 }
 
-void MainWindow::on_actionReportBug_triggered()
-{
-    DesktopServices::openUrl(QUrl(BuildConfig.BUG_TRACKER_URL));
-}
-
 void MainWindow::on_actionClearMetadata_triggered()
 {
     // This if contains side effects!
@@ -1378,17 +1349,6 @@ void MainWindow::on_actionAddToPATH_triggered()
     }
 }
 #endif
-
-void MainWindow::on_actionOpenWiki_triggered()
-{
-    DesktopServices::openUrl(QUrl(BuildConfig.WIKI_URL));
-}
-
-void MainWindow::on_actionAbout_triggered()
-{
-    AboutDialog dialog(this);
-    dialog.exec();
-}
 
 void MainWindow::on_actionDeleteInstance_triggered()
 {

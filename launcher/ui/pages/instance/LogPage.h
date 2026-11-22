@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-3.0-only
+﻿// SPDX-License-Identifier: GPL-3.0-only
 /*
  *  SpikyMC - Minecraft Launcher
  *  Copyright (c) 2022 Jamie Mansfield <jmansfield@cadixdev.org>
@@ -69,7 +69,6 @@ class LogPage : public QWidget, public BasePage {
     virtual QIcon icon() const override { return QIcon::fromTheme("log"); }
     virtual QString id() const override { return "console"; }
     virtual bool apply() override;
-    virtual QString helpPage() const override { return "Minecraft-Logs"; }
     virtual bool shouldDisplay() const override;
     void retranslate() override;
 

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-3.0-only
+﻿// SPDX-License-Identifier: GPL-3.0-only
 /*
  *  SpikyMC - Minecraft Launcher
  *  Copyright (c) 2021-2022 Jamie Mansfield <jmansfield@cadixdev.org>
@@ -62,7 +62,6 @@ class TechnicPage : public QWidget, public ModpackProviderBasePage {
     QString displayName() const override { return "Technic"; }
     QIcon icon() const override { return QIcon::fromTheme("technic"); }
     QString id() const override { return "technic"; }
-    QString helpPage() const override { return "Technic-platform"; }
     bool shouldDisplay() const override;
     void retranslate() override;
 

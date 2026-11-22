@@ -5,9 +5,15 @@ find_package(Java 1.7 REQUIRED COMPONENTS Development)
 include(UseJava)
 set(CMAKE_JAVA_JAR_ENTRY_POINT team.spiky.mc.EntryPoint)
 set(CMAKE_JAVA_COMPILE_FLAGS -target 7 -source 7)
+execute_process(COMMAND "${Java_JAVAC_EXECUTABLE}" -version OUTPUT_VARIABLE _javacver ERROR_VARIABLE _javacver)
+if(_javacver MATCHES "javac 1[89]|javac ([2-9][0-9]|[1-9][0-9]+)\\.")
+    # ponytail: JDK>=9 dropped -source 7; launcher jars only need to run on modern Java.
+    set(CMAKE_JAVA_COMPILE_FLAGS -target 8 -source 8 -Xlint:-options)
+endif()
 
 set(SRC
     team/spiky/mc/EntryPoint.java
+    team/spiky/mc/SystemProperties.java
     team/spiky/mc/launcher/Launcher.java
     team/spiky/mc/launcher/impl/AbstractLauncher.java
     team/spiky/mc/launcher/impl/StandardLauncher.java

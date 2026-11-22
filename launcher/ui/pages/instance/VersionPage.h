@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022-2023 Sefa Eyeoglu <contact@scrumplex.net>
+﻿// SPDX-FileCopyrightText: 2022-2023 Sefa Eyeoglu <contact@scrumplex.net>
 //
 // SPDX-License-Identifier: GPL-3.0-only AND Apache-2.0
 
@@ -60,7 +60,6 @@ class VersionPage : public QMainWindow, public BasePage {
     virtual QString displayName() const override { return tr("Version"); }
     virtual QIcon icon() const override;
     virtual QString id() const override { return "version"; }
-    virtual QString helpPage() const override { return "Instance-Version"; }
     virtual bool shouldDisplay() const override;
     void retranslate() override;
 

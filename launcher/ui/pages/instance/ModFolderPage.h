@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-3.0-only
+﻿// SPDX-License-Identifier: GPL-3.0-only
 /*
  *  SpikyMC - Minecraft Launcher
  *  Copyright (c) 2022 Jamie Mansfield <jmansfield@cadixdev.org>
@@ -56,7 +56,6 @@ class ModFolderPage : public ExternalResourcesPage {
     virtual QString displayName() const override { return tr("Mods"); }
     virtual QIcon icon() const override { return QIcon::fromTheme("loadermods"); }
     virtual QString id() const override { return "mods"; }
-    virtual QString helpPage() const override { return "Loader-mods"; }
 
     virtual bool shouldDisplay() const override;
 
@@ -87,7 +86,6 @@ class CoreModFolderPage : public ModFolderPage {
     virtual QString displayName() const override { return tr("Core Mods"); }
     virtual QIcon icon() const override { return QIcon::fromTheme("coremods"); }
     virtual QString id() const override { return "coremods"; }
-    virtual QString helpPage() const override { return "Core-mods"; }
 
     virtual bool shouldDisplay() const override;
 };
@@ -101,7 +99,6 @@ class NilModFolderPage : public ModFolderPage {
     virtual QString displayName() const override { return tr("Nilmods"); }
     virtual QIcon icon() const override { return QIcon::fromTheme("coremods"); }
     virtual QString id() const override { return "nilmods"; }
-    virtual QString helpPage() const override { return "Nilmods"; }
 
     virtual bool shouldDisplay() const override;
 };

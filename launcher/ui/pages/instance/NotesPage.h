@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-3.0-only
+﻿// SPDX-License-Identifier: GPL-3.0-only
 /*
  *  SpikyMC - Minecraft Launcher
  *  Copyright (c) 2022 Jamie Mansfield <jmansfield@cadixdev.org>
@@ -60,7 +60,6 @@ class NotesPage : public QWidget, public BasePage {
     }
     virtual QString id() const override { return "notes"; }
     virtual bool apply() override;
-    virtual QString helpPage() const override { return "Notes"; }
     void retranslate() override;
 
    private:

@@ -1,0 +1,16 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource prefix="/settingsui">
+        <file alias="LauncherPage.ui">../../ui/pages/global/LauncherPage.ui</file>
+        <file alias="APIPage.ui">../../ui/pages/global/APIPage.ui</file>
+        <file alias="ExternalToolsPage.ui">../../ui/pages/global/ExternalToolsPage.ui</file>
+        <file alias="JavaPage.ui">../../ui/pages/global/JavaPage.ui</file>
+        <file alias="ProxyPage.ui">../../ui/pages/global/ProxyPage.ui</file>
+        <file alias="AccountListPage.ui">../../ui/pages/global/AccountListPage.ui</file>
+        <file alias="JavaSettingsWidget.ui">../../ui/widgets/JavaSettingsWidget.ui</file>
+        <file alias="MinecraftSettingsWidget.ui">../../ui/widgets/MinecraftSettingsWidget.ui</file>
+        <file alias="AppearanceWidget.ui">../../ui/widgets/AppearanceWidget.ui</file>
+        <file alias="CustomCommands.ui">../../ui/widgets/CustomCommands.ui</file>
+        <file alias="EnvironmentVariables.ui">../../ui/widgets/EnvironmentVariables.ui</file>
+    </qresource>
+</RCC>

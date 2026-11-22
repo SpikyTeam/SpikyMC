@@ -44,7 +44,7 @@ class InstancePageProvider : protected QObject, public BasePageProvider {
         values.append(new ServersPage(inst));
         values.append(new ScreenshotsPage(FS::PathCombine(inst->gameRoot(), "screenshots")));
         values.append(new InstanceSettingsPage(inst));
-        values.append(new OtherLogsPage("logs", tr("Other Logs"), "Other-Logs", inst));
+        values.append(new OtherLogsPage("logs", tr("Other Logs"), inst));
         return values;
     }
 

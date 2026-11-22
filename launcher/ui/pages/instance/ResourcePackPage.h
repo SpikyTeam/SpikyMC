@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 flowln <flowlnlnln@gmail.com>
+﻿// SPDX-FileCopyrightText: 2023 flowln <flowlnlnln@gmail.com>
 //
 // SPDX-License-Identifier: GPL-3.0-only AND Apache-2.0
 /*
@@ -53,7 +53,6 @@ class ResourcePackPage : public ExternalResourcesPage {
     QString displayName() const override { return tr("Resource Packs"); }
     QIcon icon() const override { return QIcon::fromTheme("resourcepacks"); }
     QString id() const override { return "resourcepacks"; }
-    QString helpPage() const override { return "Resource-packs"; }
 
     virtual bool shouldDisplay() const override
     {

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-3.0-only
+﻿// SPDX-License-Identifier: GPL-3.0-only
 /*
  *  SpikyMC - Minecraft Launcher
  *  Copyright (c) 2022 Jamie Mansfield <jmansfield@cadixdev.org>
@@ -59,5 +59,4 @@ class InstanceSettingsPage : public MinecraftSettingsWidget, public BasePage {
         saveSettings();
         return true;
     }
-    QString helpPage() const override { return "Instance-settings"; }
 };

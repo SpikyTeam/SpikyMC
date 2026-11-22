@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-3.0-only
+﻿// SPDX-License-Identifier: GPL-3.0-only
 /*
  *  SpikyMC - Minecraft Launcher
  *  Copyright (c) 2022 Jamie Mansfield <jmansfield@cadixdev.org>
@@ -65,7 +65,6 @@ class ScreenshotsPage : public QMainWindow, public BasePage {
     virtual QString displayName() const override { return tr("Screenshots"); }
     virtual QIcon icon() const override { return QIcon::fromTheme("screenshots"); }
     virtual QString id() const override { return "screenshots"; }
-    virtual QString helpPage() const override { return "Screenshots-management"; }
     void retranslate() override;
 
    protected:

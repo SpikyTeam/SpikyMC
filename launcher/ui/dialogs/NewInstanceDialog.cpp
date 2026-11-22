@@ -58,7 +58,9 @@
 #include <QValidator>
 #include <utility>
 
+#include "minecraft/Horizon.h"
 #include "ui/pages/modplatform/CustomPage.h"
+#include "ui/pages/modplatform/HorizonPage.h"
 #include "ui/pages/modplatform/ImportPage.h"
 #include "ui/pages/modplatform/atlauncher/AtlPage.h"
 #include "ui/pages/modplatform/flame/FlamePage.h"
@@ -101,7 +103,7 @@ NewInstanceDialog::NewInstanceDialog(const QString& initialGroup,
 
     // NOTE: m_buttons must be initialized before PageContainer, because it indirectly accesses m_buttons through setSuggestedPack! Do not
     // move this below.
-    m_buttons = new QDialogButtonBox(QDialogButtonBox::Help | QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+    m_buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 
     m_container = new PageContainer(this, {}, this);
     m_container->useSidebarStyle(false);
@@ -127,12 +129,6 @@ NewInstanceDialog::NewInstanceDialog(const QString& initialGroup,
     cancelButton->setAutoDefault(false);
     cancelButton->setText(tr("Cancel"));
     connect(cancelButton, &QPushButton::clicked, this, &NewInstanceDialog::reject);
-
-    auto* helpButton = m_buttons->button(QDialogButtonBox::Help);
-    helpButton->setDefault(false);
-    helpButton->setAutoDefault(false);
-    helpButton->setText(tr("Help"));
-    connect(helpButton, &QPushButton::clicked, m_container, &PageContainer::help);
 
     if (!url.isEmpty()) {
         QUrl actualUrl(url);
@@ -203,6 +199,9 @@ QList<BasePage*> NewInstanceDialog::getPages()
     m_importPage = new ImportPage(this);
 
     pages.append(new CustomPage(this));
+    // Horizon publishes no build for other architectures.
+    if (!Horizon::platformAssetName().isEmpty())
+        pages.append(new HorizonPage(this));
     pages.append(m_importPage);
     pages.append(new AtlPage(this));
     if (APPLICATION->capabilities() & Application::SupportsFlame) {

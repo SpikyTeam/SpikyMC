@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 flowln <flowlnlnln@gmail.com>
+﻿// SPDX-FileCopyrightText: 2023 flowln <flowlnlnln@gmail.com>
 // SPDX-FileCopyrightText: 2023 TheKodeToad <TheKodeToad@proton.me>
 //
 // SPDX-License-Identifier: GPL-3.0-only
@@ -23,7 +23,6 @@ ResourceDownload::ResourceDescriptor prepareDataPackDescriptor()
                        "curseforge");
     urlHandlers.insert(QRegularExpression::anchoredPattern(R"(minecraft\.curseforge\.com\/projects\/([^\/]+)\/?)"), "curseforge");
     return {
-        .helpPage = {},
         //: The singular version of 'data packs'
         .resourceString = QObject::tr("data pack"),
         //: The plural version of 'data pack'

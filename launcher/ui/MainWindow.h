@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-3.0-only
+﻿// SPDX-License-Identifier: GPL-3.0-only
 /*
  *  SpikyMC - Minecraft Launcher
  *  Copyright (C) 2022 Sefa Eyeoglu <contact@scrumplex.net>
@@ -87,13 +87,10 @@ class MainWindow : public QMainWindow {
     QMenu* createPopupMenu() override;
 
    private slots:
-    void on_actionAbout_triggered();
 
     void on_actionAddInstance_triggered();
 
-    void on_actionREDDIT_triggered();
 
-    void on_actionMATRIX_triggered();
 
     void on_actionCopyInstance_triggered();
 
@@ -126,7 +123,6 @@ class MainWindow : public QMainWindow {
 
     void on_actionManageAccounts_triggered();
 
-    void on_actionReportBug_triggered();
 
     void on_actionClearMetadata_triggered();
 
@@ -134,7 +130,6 @@ class MainWindow : public QMainWindow {
     void on_actionAddToPATH_triggered();
 #endif
 
-    void on_actionOpenWiki_triggered();
 
     void on_actionLaunchInstance_triggered();
 
@@ -225,7 +220,6 @@ class MainWindow : public QMainWindow {
     QLabel* m_statusCenter = nullptr;
     LabeledToolButton* changeIconButton = nullptr;
     LabeledToolButton* renameButton = nullptr;
-    QToolButton* helpMenuButton = nullptr;
     KonamiCode* secretEventFilter = nullptr;
 
     MinecraftInstance* m_selectedInstance = nullptr;

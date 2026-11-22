@@ -26,7 +26,7 @@ $parent = Split-Path -Parent $root
 $buildDir = Resolve-Path2 $parent $BuildDir
 $releaseDir = Resolve-Path2 $parent $ReleaseDir
 $distRoot = Join-Path $parent "dist"
-$exe = Join-Path $buildDir "spikymc.exe"
+$exe = Join-Path $buildDir "Release\spikymc.exe"
 
 # user/runtime data that must never ship in a release build
 # NOTE: "jars" (JavaCheck.jar, NewLaunch.jar, NewLaunchLegacy.jar) is NOT runtime data —
@@ -160,6 +160,14 @@ You can safely delete this file, if you don't want the launcher to store your da
     $qtlogging = Join-Path $root "launcher\qtlogging.ini"
     if (Test-Path -LiteralPath $qtlogging) {
         Copy-Item -LiteralPath $qtlogging -Destination $distDir -Force
+    }
+
+    # Licenses are required in every distributed build.
+    foreach ($licenseFile in @("LICENSE", "COPYING.md")) {
+        $licensePath = Join-Path $root $licenseFile
+        if (Test-Path -LiteralPath $licensePath) {
+            Copy-Item -LiteralPath $licensePath -Destination $distDir -Force
+        }
     }
 
     # manifest.txt: list of shipped files (used by the standalone updater

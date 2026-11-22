@@ -63,6 +63,10 @@ void Resource::parseFile()
         if (fileName.endsWith(".zip") || fileName.endsWith(".jar")) {
             m_type = ResourceType::ZIPFILE;
             fileName.chop(4);
+        } else if (fileName.endsWith(".hmod")) {
+            // Horizon content mod: data and assets only, read like a zip.
+            m_type = ResourceType::ZIPFILE;
+            fileName.chop(5);
         } else if (fileName.endsWith(".nilmod")) {
             m_type = ResourceType::ZIPFILE;
             fileName.chop(7);

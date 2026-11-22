@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-3.0-only
+﻿// SPDX-License-Identifier: GPL-3.0-only
 /*
  *  SpikyMC - Minecraft Launcher
  *
@@ -33,7 +33,6 @@ class DiscordRPCPage : public QWidget, public BasePage {
     QString displayName() const override { return tr("Discord RPC"); }
     QIcon icon() const override { return QIcon::fromTheme("discord"); }
     QString id() const override { return "discord-rpc"; }
-    QString helpPage() const override { return QString(); }
     bool apply() override;
     void retranslate() override;
 

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-3.0-only
+﻿// SPDX-License-Identifier: GPL-3.0-only
 /*
  *  SpikyMC - Minecraft Launcher
  *  Copyright (c) 2022 Jamie Mansfield <jmansfield@cadixdev.org>
@@ -56,7 +56,6 @@ class WorldListPage : public QMainWindow, public BasePage {
     QString displayName() const override { return tr("Worlds"); }
     QIcon icon() const override { return QIcon::fromTheme("worlds"); }
     QString id() const override { return "worlds"; }
-    QString helpPage() const override { return "Worlds"; }
     bool shouldDisplay() const override;
     void retranslate() override;
 

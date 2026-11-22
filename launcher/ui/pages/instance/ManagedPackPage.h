@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 flowln <flowlnlnln@gmail.com>
+﻿// SPDX-FileCopyrightText: 2022 flowln <flowlnlnln@gmail.com>
 //
 // SPDX-License-Identifier: GPL-3.0-only
 
@@ -36,7 +36,6 @@ class ManagedPackPage : public QWidget, public BasePage {
 
     QString displayName() const override;
     QIcon icon() const override;
-    QString helpPage() const override;
     QString id() const override { return "managed_pack"; }
     bool shouldDisplay() const override;
 
@@ -120,7 +119,6 @@ class ModrinthManagedPackPage final : public ManagedPackPage {
 
     void parseManagedPack() override;
     QString url() const override;
-    QString helpPage() const override { return "modrinth-managed-pack"; }
 
    public slots:
     void suggestVersion() override;
@@ -143,7 +141,6 @@ class FlameManagedPackPage final : public ManagedPackPage {
 
     void parseManagedPack() override;
     QString url() const override;
-    QString helpPage() const override { return "curseforge-managed-pack"; }
 
    public slots:
     void suggestVersion() override;

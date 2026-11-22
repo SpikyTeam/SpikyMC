@@ -38,17 +38,30 @@
 #include "PageContainer.h"
 #include "BuildConfig.h"
 #include "PageContainer_p.h"
+#include "SettingsSearch.h"
 
+#include <QAbstractButton>
+#include <QAbstractSpinBox>
+#include <QComboBox>
 #include <QDialogButtonBox>
 #include <QGridLayout>
+#include <QKeyEvent>
 #include <QLabel>
 #include <QLineEdit>
 #include <QListView>
+#include <QListWidget>
+#include <QPainter>
+#include <QPointer>
 #include <QPushButton>
+#include <QScrollArea>
+#include <QShortcut>
 #include <QSortFilterProxyModel>
 #include <QStackedLayout>
 #include <QStyledItemDelegate>
+#include <QTabWidget>
+#include <QTimer>
 #include <QUrl>
+#include <QVBoxLayout>
 #include <utility>
 
 #include "settings/SettingsObject.h"
@@ -73,6 +86,51 @@ class PageEntryFilterModel : public QSortFilterProxyModel {
         }
         // Regular contents check, then check page-filter.
         return QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent);
+    }
+};
+
+/// Two-line item: matched text on top, section name below (no technical key).
+class SearchResultDelegate : public QStyledItemDelegate {
+   public:
+    using QStyledItemDelegate::QStyledItemDelegate;
+
+    QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override
+    {
+        Q_UNUSED(option)
+        Q_UNUSED(index)
+        return QSize(0, 44);
+    }
+
+    void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+    {
+        QStyleOptionViewItem opt = option;
+        initStyleOption(&opt, index);
+        const QWidget* widget = option.widget;
+        QStyle* style = widget ? widget->style() : QApplication::style();
+        style->drawPrimitive(QStyle::PE_PanelItemViewItem, &opt, painter, widget);
+
+        const bool selected = option.state & QStyle::State_Selected;
+        const QRect rect = option.rect.adjusted(10, 6, -10, -6);
+
+        painter->save();
+        QFont titleFont = option.font;
+        painter->setFont(titleFont);
+        painter->setPen(option.palette.color(selected ? QPalette::HighlightedText : QPalette::Text));
+        const QFontMetrics titleMetrics(titleFont);
+        painter->drawText(QRect(rect.left(), rect.top(), rect.width(), titleMetrics.height()), Qt::AlignLeft | Qt::AlignVCenter,
+                          titleMetrics.elidedText(index.data(Qt::DisplayRole).toString(), Qt::ElideRight, rect.width()));
+
+        QFont subtitleFont = titleFont;
+        if (subtitleFont.pointSizeF() > 0) {
+            subtitleFont.setPointSizeF(subtitleFont.pointSizeF() * 0.88);
+        }
+        painter->setFont(subtitleFont);
+        painter->setPen(option.palette.color(QPalette::Disabled, QPalette::Text));
+        const QFontMetrics subtitleMetrics(subtitleFont);
+        painter->drawText(QRect(rect.left(), rect.top() + titleMetrics.height() + 1, rect.width(), subtitleMetrics.height()),
+                          Qt::AlignLeft | Qt::AlignVCenter,
+                          subtitleMetrics.elidedText(index.data(Qt::UserRole + 1).toString(), Qt::ElideRight, rect.width()));
+        painter->restore();
     }
 };
 
@@ -186,7 +244,7 @@ void PageContainer::createUI()
 
     m_layout = new QGridLayout;
     m_layout->addLayout(headerHLayout, 0, 1, 1, 1);
-    m_layout->addWidget(m_pageList, 0, 0, 3, 1);
+    m_layout->addWidget(m_pageList, 1, 0, 3, 1);
     m_layout->addLayout(m_pageStack, 1, 1, 1, 1);
     m_layout->setColumnStretch(1, 4);
     m_layout->setContentsMargins(0, 0, 0, 0);
@@ -202,6 +260,11 @@ void PageContainer::retranslate()
     for (auto* page : m_model->pages()) {
         page->retranslate();
     }
+
+    if (m_searchEdit) {
+        m_searchEdit->setPlaceholderText(tr("Search settings…"));
+    }
+    rebuildSearchIndex();
 }
 
 void PageContainer::addButtons(QWidget* buttons)
@@ -217,6 +280,214 @@ void PageContainer::addButtons(QLayout* buttons)
 void PageContainer::useSidebarStyle(bool sidebar)
 {
     m_pageList->setProperty("_kde_side_panel_view", sidebar);
+}
+
+void PageContainer::setSearchEnabled(bool enabled)
+{
+    if (m_searchEnabled == enabled) {
+        return;
+    }
+    m_searchEnabled = enabled;
+
+    if (!enabled) {
+        if (m_searchEdit) {
+            m_searchEdit->hide();
+        }
+        if (m_searchResults) {
+            m_searchResults->hide();
+        }
+        return;
+    }
+
+    if (!m_search) {
+        m_search = std::make_unique<SettingsSearch>();
+    }
+
+    m_searchEdit = new QLineEdit(this);
+    m_searchEdit->setPlaceholderText(tr("Search settings…"));
+    m_searchEdit->setClearButtonEnabled(true);
+    m_layout->addWidget(m_searchEdit, 0, 0, 1, 1);
+    connect(m_searchEdit, &QLineEdit::textChanged, this, &PageContainer::applySearch);
+    connect(m_searchEdit, &QLineEdit::returnPressed, this, [this] {
+        if (m_searchResults && m_searchResults->currentRow() >= 0) {
+            activateSearchResult(m_searchResults->currentRow());
+        }
+    });
+
+    auto* findShortcut = new QShortcut(QKeySequence::Find, this);
+    connect(findShortcut, &QShortcut::activated, this, [this] {
+        if (m_searchEdit) {
+            m_searchEdit->setFocus();
+            m_searchEdit->selectAll();
+        }
+    });
+
+    m_searchResults = new QListWidget(this);
+    m_searchResults->setFrameShape(QFrame::NoFrame);
+    m_searchResults->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    m_searchResults->setSelectionMode(QAbstractItemView::SingleSelection);
+    m_searchResults->setUniformItemSizes(false);
+    m_searchResults->setItemDelegate(new SearchResultDelegate(m_searchResults));
+    m_searchResults->hide();
+    m_layout->addWidget(m_searchResults, 1, 0, 3, 1);
+    connect(m_searchResults, &QListWidget::itemClicked, this,
+            [this](QListWidgetItem* item) { activateSearchResult(m_searchResults->row(item)); });
+    connect(m_searchResults, &QListWidget::itemActivated, this,
+            [this](QListWidgetItem* item) { activateSearchResult(m_searchResults->row(item)); });
+
+    m_searchEdit->installEventFilter(this);
+    rebuildSearchIndex();
+    m_searchEdit->setFocus(Qt::OtherFocusReason);
+}
+
+void PageContainer::rebuildSearchIndex()
+{
+    if (!m_searchEnabled || !m_search) {
+        return;
+    }
+    m_search->build(getPages());
+    if (m_searchEdit && !m_searchEdit->text().trimmed().isEmpty()) {
+        applySearch(m_searchEdit->text());
+    }
+}
+
+void PageContainer::applySearch(const QString& text)
+{
+    if (!m_searchResults) {
+        return;
+    }
+    m_currentResults = m_search->query(text);
+    m_searchResults->clear();
+
+    if (text.trimmed().isEmpty()) {
+        m_searchResults->hide();
+        m_pageList->show();
+        return;
+    }
+
+    m_pageList->hide();
+    m_searchResults->show();
+
+    if (m_currentResults.isEmpty()) {
+        auto* item = new QListWidgetItem(m_searchResults);
+        item->setFlags(Qt::NoItemFlags);
+        item->setText(tr("Nothing found"));
+        item->setForeground(palette().color(QPalette::Disabled, QPalette::Text));
+        return;
+    }
+
+    for (const auto& entry : m_currentResults) {
+        auto* item = new QListWidgetItem(m_searchResults);
+        item->setText(entry.title);
+        item->setData(Qt::UserRole + 1, entry.page ? entry.page->displayName() : QString());
+        item->setSizeHint(QSize(0, 44));
+    }
+    m_searchResults->setCurrentRow(0);
+}
+
+bool PageContainer::eventFilter(QObject* watched, QEvent* event)
+{
+    if (m_searchEdit && watched == m_searchEdit && event->type() == QEvent::KeyPress) {
+        auto* key = static_cast<QKeyEvent*>(event);
+        if (key->key() == Qt::Key_Down && m_searchResults && m_searchResults->count() > 0) {
+            m_searchResults->setFocus(Qt::OtherFocusReason);
+            if (m_searchResults->currentRow() < 0) {
+                m_searchResults->setCurrentRow(0);
+            }
+            return true;
+        }
+        if (key->key() == Qt::Key_Escape && !m_searchEdit->text().isEmpty()) {
+            m_searchEdit->clear();
+            return true;
+        }
+    }
+    return QWidget::eventFilter(watched, event);
+}
+
+void PageContainer::activateSearchResult(int row)
+{
+    if (row < 0 || row >= m_currentResults.size()) {
+        return;
+    }
+    const auto entry = m_currentResults.at(row);
+    if (!entry.page) {
+        return;
+    }
+    selectPage(entry.page->id());
+    if (!entry.target) {
+        return;
+    }
+    QPointer<QWidget> target = entry.target;
+    QTimer::singleShot(0, this, [this, target] {
+        if (target) {
+            revealResult(target);
+        }
+    });
+}
+
+void PageContainer::revealResult(QWidget* target)
+{
+    // Switch the inner tab that owns the setting, e.g. Minecraft -> "Custom commands".
+    bool switchedTab = false;
+    for (QWidget* parent = target->parentWidget(); parent; parent = parent->parentWidget()) {
+        if (auto* tabs = qobject_cast<QTabWidget*>(parent)) {
+            for (int i = 0; i < tabs->count(); ++i) {
+                if (tabs->widget(i)->isAncestorOf(target)) {
+                    if (tabs->currentIndex() != i) {
+                        tabs->setCurrentIndex(i);
+                        switchedTab = true;
+                    }
+                    break;
+                }
+            }
+            break;
+        }
+    }
+
+    QPointer<QWidget> guard = target;
+    if (switchedTab) {
+        // Give the page a layout pass before scrolling to the now visible widget.
+        QTimer::singleShot(0, this, [this, guard] {
+            if (guard) {
+                revealResultNow(guard);
+            }
+        });
+        return;
+    }
+    revealResultNow(target);
+}
+
+void PageContainer::revealResultNow(QWidget* target)
+{
+    QWidget* scrollArea = target->parentWidget();
+    while (scrollArea) {
+        if (auto* area = qobject_cast<QScrollArea*>(scrollArea)) {
+            area->ensureWidgetVisible(target, 24, 24);
+            break;
+        }
+        scrollArea = scrollArea->parentWidget();
+    }
+
+    if (target->focusPolicy() != Qt::NoFocus) {
+        target->setFocus(Qt::OtherFocusReason);
+    }
+
+    // Border on the widget itself, so the mark follows it through scroll and layout changes.
+    const QString oldStyle = target->styleSheet();
+    const auto oldPalette = target->palette();
+    target->setStyleSheet(oldStyle + QStringLiteral("\nborder: 2px solid rgb(108, 192, 122); border-radius: 3px;"));
+    QPalette marked = oldPalette;
+    marked.setColor(QPalette::Base, QColor(108, 192, 122, 55));
+    marked.setColor(QPalette::Window, QColor(108, 192, 122, 55));
+    target->setPalette(marked);
+
+    QPointer<QWidget> guard = target;
+    QTimer::singleShot(1300, target, [guard, oldStyle, oldPalette] {
+        if (guard) {
+            guard->setStyleSheet(oldStyle);
+            guard->setPalette(oldPalette);
+        }
+    });
 }
 
 void PageContainer::showPage(int row)
@@ -236,17 +507,6 @@ void PageContainer::showPage(int row)
     } else {
         m_pageStack->setCurrentIndex(0);
         m_header->setText(QString());
-    }
-}
-
-void PageContainer::help()
-{
-    if (m_currentPage) {
-        QString pageId = m_currentPage->helpPage();
-        if (pageId.isEmpty()) {
-            return;
-        }
-        DesktopServices::openUrl(QUrl(BuildConfig.HELP_URL.arg(pageId)));
     }
 }
 

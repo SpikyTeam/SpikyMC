@@ -62,6 +62,8 @@
 #include "minecraft/launch/EnsureAvailableMemory.h"
 #include "minecraft/launch/EnsureOfflineLibraries.h"
 #include "minecraft/launch/ExtractNatives.h"
+#include "minecraft/launch/HorizonClientLaunch.h"
+#include "minecraft/launch/HorizonPrepare.h"
 #include "minecraft/launch/LauncherPartLaunch.h"
 #include "minecraft/launch/ModMinecraftJar.h"
 #include "minecraft/launch/PrintInstanceInfo.h"
@@ -74,6 +76,8 @@
 #include "minecraft/update/FoldersTask.h"
 #include "minecraft/update/LegacyFMLLibrariesTask.h"
 #include "minecraft/update/LibrariesTask.h"
+
+#include "minecraft/Horizon.h"
 
 #include "java/JavaUtils.h"
 
@@ -271,6 +275,11 @@ void MinecraftInstance::loadSpecificSettings()
     m_settings->registerSetting("ExportOptionalFiles", true);
     m_settings->registerSetting("ExportRecommendedRAM");
 
+    // Horizon builds run their own client, prepared from the owner's Mojang files.
+    m_settings->registerSetting("HorizonVersion", "");
+    m_settings->registerSetting("HorizonBuildDir", "");
+    m_settings->registerSetting("HorizonResourcesDir", "");
+
     auto dataPacksEnabled = m_settings->registerSetting("GlobalDataPacksEnabled", false);
     auto dataPacksPath = m_settings->registerSetting("GlobalDataPacksPath", "");
 
@@ -416,7 +425,25 @@ QString MinecraftInstance::jarModsDir() const
 
 QString MinecraftInstance::modsRoot() const
 {
-    return FS::PathCombine(gameRoot(), "mods");
+    return FS::PathCombine(gameRoot(), isHorizon() ? "horizon-mods" : "mods");
+}
+
+bool MinecraftInstance::isHorizon() const
+{
+    return !m_settings->get("HorizonVersion").toString().isEmpty();
+}
+
+QString MinecraftInstance::horizonBuildDir() const
+{
+    return Horizon::buildDir(instanceRoot(), m_settings->get("HorizonBuildDir").toString());
+}
+
+QString MinecraftInstance::horizonResourcesDir() const
+{
+    auto resources = m_settings->get("HorizonResourcesDir").toString();
+    if (resources.isEmpty())
+        resources = Horizon::resourcesDir(m_settings->get("HorizonVersion").toString());
+    return resources;
 }
 
 QString MinecraftInstance::modsCacheLocation() const
@@ -1161,6 +1188,7 @@ QList<LaunchStep::Ptr> MinecraftInstance::createUpdateTask()
 LaunchTask* MinecraftInstance::createLaunchTask(AuthSessionPtr session, MinecraftTarget::Ptr targetToJoin)
 {
     updateRuntimeContext();
+    const bool horizon = isHorizon();
     auto process = LaunchTask::create(this);
     auto pptr = process.get();
 
@@ -1240,7 +1268,7 @@ LaunchTask* MinecraftInstance::createLaunchTask(AuthSessionPtr session, Minecraf
     }
 
     // if there are any jar mods
-    {
+    if (!horizon) {
         process->appendStep(makeShared<ModMinecraftJar>(pptr));
     }
 
@@ -1260,16 +1288,22 @@ LaunchTask* MinecraftInstance::createLaunchTask(AuthSessionPtr session, Minecraf
     }
 
     // extract native jars if needed
-    {
+    if (!horizon) {
         process->appendStep(makeShared<ExtractNatives>(pptr));
     }
 
     // reconstruct assets if needed
-    {
+    if (!horizon) {
         process->appendStep(makeShared<ReconstructAssets>(pptr));
     }
 
-    {
+    if (horizon) {
+        process->appendStep(makeShared<HorizonPrepare>(pptr));
+        auto step = makeShared<HorizonClientLaunch>(pptr);
+        step->setAuthSession(session);
+        step->setTargetToJoin(targetToJoin);
+        process->appendStep(step);
+    } else {
         // actually launch the game
         auto step = makeShared<LauncherPartLaunch>(pptr);
         step->setWorkingDirectory(gameRoot());

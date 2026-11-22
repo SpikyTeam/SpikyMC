@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 flowln <flowlnlnln@gmail.com>
+﻿// SPDX-FileCopyrightText: 2023 flowln <flowlnlnln@gmail.com>
 //
 // SPDX-License-Identifier: GPL-3.0-only AND Apache-2.0
 /*
@@ -50,7 +50,6 @@ class ShaderPackPage : public ExternalResourcesPage {
     QString displayName() const override { return tr("Shader Packs"); }
     QIcon icon() const override { return QIcon::fromTheme("shaderpacks"); }
     QString id() const override { return "shaderpacks"; }
-    QString helpPage() const override { return "shader-packs"; }
 
     bool shouldDisplay() const override { return true; }
 
